@@ -1,5 +1,5 @@
 from .preprocess import (
-    get_subject_timestamp,
+    get_subject_segments,
     get_subject_audio,
     get_subject_text,
 )
@@ -15,12 +15,12 @@ import pickle
 
 # 被験者の音声ファイルからテキストデータを抽出する
 def _extract_text_feature(subject_audio_file, output_dir):
-    subject_text = get_subject_text(subject_audio_file)
-    logger.info(f"被験者のテキスト: \n{subject_text}")
+    subject_text = get_subject_text(subject_audio_file, output_dir)
     # TODO: BERTなどで特徴抽出
     text_feature = get_bert_feature(subject_text)
     with open(os.path.join(output_dir, "text_feature.pickle"), mode="wb") as f:
         pickle.dump(text_feature, f)
+    logger.info("Successfully extracted text feature!")
     return
 
 
@@ -29,18 +29,19 @@ def _extract_audio_feature(subject_audio_file, output_dir):
     audio_feature = get_opensmile_feature(subject_audio_file)
     with open(os.path.join(output_dir, "audio_feature.pickle"), mode="wb") as f:
         pickle.dump(audio_feature, f)
+    logger.info("Successfully extracted audio feature!")
     return
 
 
-# # カウンセリング動画データから特徴抽出を行う
-# def _extract_video_feature(video_file, subject_segments):
-#     # 音声データを元に被験者のみの動画データを抽出する
-#     subject_frame = get_subject_frames(video_file, subject_segments)
-#     # TODO:フレームの確認
-#     # TODO: videomaeでの特徴抽出
-#     # return video_feature
-#     logger.info("動画特徴量")
-#     return
+# カウンセリング動画データから特徴抽出を行う
+def _extract_video_feature(video_file, subject_segments, output_dir):
+    # 音声データを元に被験者のみの動画データを抽出する
+    # subject_frame = get_subject_frames(video_file, subject_segments)
+    # TODO:フレームの確認
+    # TODO: videomaeでの特徴抽出
+    # return video_feature
+    logger.info("Successfully extracted video feature!")
+    return
 
 
 # 動画データと音声データからから特徴抽出を行う
@@ -49,11 +50,11 @@ def extract_feature(video_file, audio_file, output_dir):
     # pydubで音声ファイルを開く
     audio = AudioSegment.from_file(audio_file)
     # 音声データから被験者が喋っている区間のミリ秒を取得する
-    subject_segments = get_subject_timestamp(audio, output_dir)
+    subject_segments = get_subject_segments(audio, output_dir)
     # ↑を利用して音声データから被験者の音声データを抜き出す
     subject_audio_file = get_subject_audio(audio, subject_segments, output_dir)
 
     # 各モダリティの特徴抽出
     _extract_audio_feature(subject_audio_file, output_dir)
-    # _extract_video_feature(video_file, subject_segments, output_dir)
+    _extract_video_feature(video_file, subject_segments, output_dir)
     _extract_text_feature(subject_audio_file, output_dir)

@@ -5,19 +5,21 @@ from openai import OpenAI
 from pydub import AudioSegment
 import cv2
 import pickle
+from logzero import logger
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
-def get_subject_timestamp(audio, output_dir, min_silence_len=500, silence_thresh=-50):
+def get_subject_segments(audio, output_dir, min_silence_len=500, silence_thresh=-50):
     subject_segments = detect_nonsilent(
         audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
     )
     # 取得した区間をpickleで保存
     with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
         pickle.dump(subject_segments, f)
+    logger.info("Successfully get subject segments!")
     return subject_segments
 
 
@@ -27,8 +29,10 @@ def get_subject_audio(audio, subject_segments, output_dir):
     for start, end in subject_segments:
         subject_audio += audio[start:end]
     # 被験者の区間のみの音声データを保存
-    subject_audio_file = os.path.join(output_dir, "subject_audio.m4a")
-    subject_audio.export(subject_audio_file, format="m4a")
+    # TODO: m4aでなくてもいい？mp3のほうが使いやすい
+    subject_audio_file = os.path.join(output_dir, "subject_audio.mp3")
+    subject_audio.export(subject_audio_file, format="mp3")
+    logger.info("Successfully get subject audio!")
     return subject_audio_file
 
 
@@ -67,7 +71,7 @@ def get_subject_frames(video_file, subject_segments, output_dir):
     cap.release()
     out.release()
     cv2.destroyAllWindows()
-
+    logger.info("Successfully get subject frames!")
     return subject_frames
 
 
@@ -86,4 +90,6 @@ def get_subject_text(subject_audio_file, output_dir):
         os.path.join(output_dir, "subject_text.txt"), encoding="utf-8", mode="w"
     ) as f:
         f.write(subject_text)
+
+    logger.info("Successfully get subject text!")
     return subject_text
