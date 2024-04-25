@@ -1,43 +1,50 @@
 from .preprocess import (
-    get_subject_frames,
     get_subject_timestamp,
     get_subject_audio,
     get_subject_text,
 )
 from .utils import make_dir
+from .text import get_bert_feature
+from .audio import get_opensmile_feature
 
 from pydub import AudioSegment
 from logzero import logger
+import os
+import pickle
 
 
 # 被験者の音声ファイルからテキストデータを抽出する
-def _extract_text_feature(subject_audio_file):
+def _extract_text_feature(subject_audio_file, output_dir):
     subject_text = get_subject_text(subject_audio_file)
     logger.info(f"被験者のテキスト: \n{subject_text}")
     # TODO: BERTなどで特徴抽出
+    text_feature = get_bert_feature(subject_text)
+    with open(os.path.join(output_dir, "text_feature.pickle"), mode="wb") as f:
+        pickle.dump(text_feature, f)
     return
 
 
-def _extract_sound_feature(subject_audio_file):
+def _extract_audio_feature(subject_audio_file, output_dir):
     # TODO: subject_audio_fileを読み取って、openSmileなどで特徴抽出
-    # return sound_feature
-    logger.info("音声特徴量")
+    audio_feature = get_opensmile_feature(subject_audio_file)
+    with open(os.path.join(output_dir, "audio_feature.pickle"), mode="wb") as f:
+        pickle.dump(audio_feature, f)
     return
 
 
-# カウンセリング動画データから特徴抽出を行う
-def _extract_movie_feature(movie_file, subject_segments):
-    # 音声データを元に被験者のみの動画データを抽出する
-    subject_frame = get_subject_frames(movie_file, subject_segments)
-    # TODO:フレームの確認
-    # TODO: videomaeでの特徴抽出
-    # return movie_feature
-    logger.info("動画特徴量")
-    return
+# # カウンセリング動画データから特徴抽出を行う
+# def _extract_video_feature(video_file, subject_segments):
+#     # 音声データを元に被験者のみの動画データを抽出する
+#     subject_frame = get_subject_frames(video_file, subject_segments)
+#     # TODO:フレームの確認
+#     # TODO: videomaeでの特徴抽出
+#     # return video_feature
+#     logger.info("動画特徴量")
+#     return
 
 
 # 動画データと音声データからから特徴抽出を行う
-def extract_feature(movie_file, audio_file, output_dir):
+def extract_feature(video_file, audio_file, output_dir):
     make_dir(output_dir)
     # pydubで音声ファイルを開く
     audio = AudioSegment.from_file(audio_file)
@@ -47,6 +54,6 @@ def extract_feature(movie_file, audio_file, output_dir):
     subject_audio_file = get_subject_audio(audio, subject_segments, output_dir)
 
     # 各モダリティの特徴抽出
-    _extract_sound_feature(subject_audio_file, output_dir)
-    _extract_movie_feature(movie_file, subject_segments, output_dir)
+    _extract_audio_feature(subject_audio_file, output_dir)
+    # _extract_video_feature(video_file, subject_segments, output_dir)
     _extract_text_feature(subject_audio_file, output_dir)

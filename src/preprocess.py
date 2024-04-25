@@ -4,10 +4,10 @@ import os
 from openai import OpenAI
 from pydub import AudioSegment
 import cv2
+import pickle
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-import pickle
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
@@ -16,7 +16,7 @@ def get_subject_timestamp(audio, output_dir, min_silence_len=500, silence_thresh
         audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
     )
     # 取得した区間をpickleで保存
-    with open(os.path.join(output_dir, "subject_segments.txt"), mode="wb") as f:
+    with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
         pickle.dump(subject_segments, f)
     return subject_segments
 
@@ -33,15 +33,15 @@ def get_subject_audio(audio, subject_segments, output_dir):
 
 
 # カウンセリングの動画データからカ被験者のみのフレームを取得する
-def get_subject_frames(movie_file, subject_segments, output_dir):
-    cap = cv2.VideoCapture(movie_file)
+def get_subject_frames(video_file, subject_segments, output_dir):
+    cap = cv2.VideoCapture(video_file)
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
 
     subject_frames = []
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    subject_movie_file = os.path.join(output_dir, "subject_movie.mp4")
+    subject_video_file = os.path.join(output_dir, "subject_video.mp4")
     out = cv2.VideoWriter(
-        subject_movie_file,
+        subject_video_file,
         fourcc,
         frame_rate,
         (
@@ -82,6 +82,8 @@ def get_subject_text(subject_audio_file, output_dir):
     )
     subject_text = transcription.text
     # 被験者のテキストを保存
-    with open(os.path.join(output_dir, "subject_text.txt"), mode="w") as f:
+    with open(
+        os.path.join(output_dir, "subject_text.txt"), encoding="utf-8", mode="w"
+    ) as f:
         f.write(subject_text)
     return subject_text

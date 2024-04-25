@@ -19,9 +19,9 @@ def main(filename):
             if not row[0].endswith(".mp4") or not row[1].endswith(".m4a"):
                 logger.warn("Skip line: " + row)
                 continue
-            movie_file = row[0].strip()
+            video_file = row[0].strip()
             audio_file = row[1].strip()
-            extract_feature(movie_file, audio_file, f"{OUTPUT_DIR}/0{i+1}")
+            extract_feature(video_file, audio_file, f"{OUTPUT_DIR}/0{i+1}")
             logger.info(f"Extracted feature from {row[0]} and {row[1]}.")
 
 

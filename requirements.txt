@@ -3,3 +3,6 @@ pydub
 logzero
 openai
 opencv-python
+opensmile
+torch
+transformers
