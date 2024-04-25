@@ -3,6 +3,8 @@ from logzero import logger
 import sys
 from src.extract import extract_feature
 
+OUTPUT_DIR = "output"
+
 
 def main(filename):
     if not filename.endswith(".csv"):
@@ -19,7 +21,7 @@ def main(filename):
                 continue
             movie_file = row[0].strip()
             audio_file = row[1].strip()
-            extract_feature(movie_file, audio_file, f"output/{i}")
+            extract_feature(movie_file, audio_file, f"{OUTPUT_DIR}/0{i+1}")
             logger.info(f"Extracted feature from {row[0]} and {row[1]}.")
 
 

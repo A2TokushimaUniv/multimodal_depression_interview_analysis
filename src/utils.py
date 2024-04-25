@@ -15,3 +15,9 @@ def remove_tmp_file(tmp_file_path):
         os.remove(tmp_file_path)
     except OSError as e:
         logger.error(f"Failed to remove file: {e}")
+
+
+def make_dir(dir_name):
+    # TODO: TemporaryDirectoryで書き換える
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)

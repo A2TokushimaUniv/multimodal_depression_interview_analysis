@@ -7,30 +7,48 @@ import cv2
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+import pickle
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
-def get_subject_timestamp(audio, min_silence_len=500, silence_thresh=-50):
+def get_subject_timestamp(audio, output_dir, min_silence_len=500, silence_thresh=-50):
     subject_segments = detect_nonsilent(
         audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
     )
+    # 取得した区間をpickleで保存
+    with open(os.path.join(output_dir, "subject_segments.txt"), mode="wb") as f:
+        pickle.dump(subject_segments, f)
     return subject_segments
 
 
 # 音のある区間（被験者の区間）だけ音声データを抜き出す
-def get_subject_audio(audio, subject_segments):
+def get_subject_audio(audio, subject_segments, output_dir):
     subject_audio = AudioSegment.empty()
     for start, end in subject_segments:
         subject_audio += audio[start:end]
-    return subject_audio
+    # 被験者の区間のみの音声データを保存
+    subject_audio_file = os.path.join(output_dir, "subject_audio.m4a")
+    subject_audio.export(subject_audio_file, format="m4a")
+    return subject_audio_file
 
 
 # カウンセリングの動画データからカ被験者のみのフレームを取得する
-def get_subject_frames(movie_file, subject_segments):
+def get_subject_frames(movie_file, subject_segments, output_dir):
     cap = cv2.VideoCapture(movie_file)
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
 
     subject_frames = []
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    subject_movie_file = os.path.join(output_dir, "subject_movie.mp4")
+    out = cv2.VideoWriter(
+        subject_movie_file,
+        fourcc,
+        frame_rate,
+        (
+            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+        ),
+    )
 
     for start, end in subject_segments:
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(start * frame_rate))
@@ -44,13 +62,17 @@ def get_subject_frames(movie_file, subject_segments):
                 break
 
             subject_frames.append(frame)
+            out.write(frame)
 
     cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+
     return subject_frames
 
 
 # 被験者の音声データをテキスト化する
-def get_subject_text(subject_audio_file):
+def get_subject_text(subject_audio_file, output_dir):
     # OpenAI API Whisperで音をテキストに変換する
     # TODO: OpenAI API経由でないほうが良い？
     client = OpenAI(api_key=OPENAI_API_KEY)
@@ -58,4 +80,8 @@ def get_subject_text(subject_audio_file):
     transcription = client.audio.transcriptions.create(
         model="whisper-1", file=audio_file
     )
-    return transcription.text
+    subject_text = transcription.text
+    # 被験者のテキストを保存
+    with open(os.path.join(output_dir, "subject_text.txt"), mode="w") as f:
+        f.write(subject_text)
+    return subject_text

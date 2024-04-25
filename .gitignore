@@ -744,4 +744,4 @@ ipython_config.py
 .ruff_cache/
 
 data/
-test.py
+output/
