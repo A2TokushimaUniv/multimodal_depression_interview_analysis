@@ -1,0 +1,5 @@
+python-dotenv
+pydub
+logzero
+openai
+opencv-python
