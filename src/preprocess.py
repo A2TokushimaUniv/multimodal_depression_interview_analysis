@@ -30,10 +30,10 @@ def get_subject_audio(audio, subject_segments, output_dir):
         subject_audio += audio[start:end]
     # 被験者の区間のみの音声データを保存
     # TODO: m4aでなくてもいい？mp3のほうが使いやすい
-    subject_audio_file = os.path.join(output_dir, "subject_audio.mp3")
-    subject_audio.export(subject_audio_file, format="mp3")
+    subject_audio_file_path = os.path.join(output_dir, "subject_audio.mp3")
+    subject_audio.export(subject_audio_file_path, format="mp3")
     logger.info("Successfully get subject audio!")
-    return subject_audio_file
+    return subject_audio_file_path
 
 
 # カウンセリングの動画データからカ被験者のみのフレームを取得する
@@ -42,10 +42,10 @@ def get_subject_frames(video_file, subject_segments, output_dir):
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
 
     subject_frames = []
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    subject_video_file = os.path.join(output_dir, "subject_video.mp4")
+    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+    subject_video_file_path = os.path.join(output_dir, "subject_video.mp4")
     out = cv2.VideoWriter(
-        subject_video_file,
+        subject_video_file_path,
         fourcc,
         frame_rate,
         (
@@ -68,8 +68,8 @@ def get_subject_frames(video_file, subject_segments, output_dir):
             subject_frames.append(frame)
             out.write(frame)
 
-    cap.release()
     out.release()
+    cap.release()
     cv2.destroyAllWindows()
     logger.info("Successfully get subject frames!")
     return subject_frames

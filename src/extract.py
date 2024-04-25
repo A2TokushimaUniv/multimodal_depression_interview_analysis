@@ -2,6 +2,7 @@ from .preprocess import (
     get_subject_segments,
     get_subject_audio,
     get_subject_text,
+    get_subject_frames,
 )
 from .utils import make_dir
 from .text import get_bert_feature
@@ -36,7 +37,7 @@ def _extract_audio_feature(subject_audio_file, output_dir):
 # カウンセリング動画データから特徴抽出を行う
 def _extract_video_feature(video_file, subject_segments, output_dir):
     # 音声データを元に被験者のみの動画データを抽出する
-    # subject_frame = get_subject_frames(video_file, subject_segments)
+    subject_frame = get_subject_frames(video_file, subject_segments, output_dir)
     # TODO:フレームの確認
     # TODO: videomaeでの特徴抽出
     # return video_feature
