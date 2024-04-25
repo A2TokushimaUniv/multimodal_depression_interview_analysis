@@ -1,5 +1,5 @@
 from pydub.silence import detect_nonsilent
-from src.utils import load_dotenv
+from .utils import load_dotenv
 import os
 from openai import OpenAI
 from pydub import AudioSegment
@@ -50,11 +50,11 @@ def get_subject_frames(movie_file, subject_segments):
 
 
 # 被験者の音声データをテキスト化する
-def get_subject_text(subject_audio):
+def get_subject_text(subject_audio_file):
     # OpenAI API Whisperで音をテキストに変換する
     # TODO: OpenAI API経由でないほうが良い？
     client = OpenAI(api_key=OPENAI_API_KEY)
-    audio_file = open(subject_audio, "rb")
+    audio_file = open(subject_audio_file, "rb")
     transcription = client.audio.transcriptions.create(
         model="whisper-1", file=audio_file
     )
