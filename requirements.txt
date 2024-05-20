@@ -6,3 +6,5 @@ opencv-python
 opensmile
 torch
 transformers
+pillow
+av

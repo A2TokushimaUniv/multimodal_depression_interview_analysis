@@ -72,7 +72,7 @@ def get_subject_frames(video_file, subject_segments, output_dir):
     cap.release()
     cv2.destroyAllWindows()
     logger.info("Successfully get subject frames!")
-    return subject_frames
+    return subject_video_file_path
 
 
 # 被験者の音声データをテキスト化する
