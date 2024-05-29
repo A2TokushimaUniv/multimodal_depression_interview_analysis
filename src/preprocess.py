@@ -12,13 +12,16 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
-def get_subject_segments(audio, output_dir, min_silence_len=500, silence_thresh=-50):
+def get_subject_segments(
+    audio, output_dir=None, min_silence_len=500, silence_thresh=-50
+):
     subject_segments = detect_nonsilent(
         audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
     )
     # 取得した区間をpickleで保存
-    with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
-        pickle.dump(subject_segments, f)
+    if output_dir:
+        with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
+            pickle.dump(subject_segments, f)
     logger.info("Successfully get subject segments!")
     return subject_segments
 
