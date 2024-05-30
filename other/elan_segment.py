@@ -19,8 +19,14 @@ def _remove_tmp_file(tmp_file_path):
 def main(audio_file, output_file):
     client = OpenAI(api_key=OPENAI_API_KEY)
     audio_file = open(audio_file, "rb")
-    audio = AudioSegment.from_file(audio_file)
-    subject_segments = subject_segments = detect_nonsilent(
+    try:
+        audio = AudioSegment.from_file(audio_file, format="m4a")
+    except:
+        logger.error("Failed to load audio file!")
+        return
+
+    logger.info("Detecting non-silent segments...")
+    subject_segments = detect_nonsilent(
         # ここのパラメータによって出力されるテキストの長さが変わる
         audio,
         min_silence_len=3000,  # min_silence_len ミリ秒以上無音なら区間を抽出
@@ -39,11 +45,12 @@ def main(audio_file, output_file):
             if len(text) > 1:  # 2文字以上の発話のみ書き込む
                 # ミリ秒を秒に直してからCSVに書き込む
                 line = [start / 1000, end / 1000, text]
-                logger.info(line)
+                logger.info("Adding line to CSV file: {}".format(line))
                 with open(output_file, "a", newline="", encoding="utf-8") as f:
                     writer = csv.writer(f)
                     writer.writerow(line)
             _remove_tmp_file("tmp.mp3")
+    logger.info("Successfully generated ELAN CSV file: {}".format(output_file))
 
 
 if __name__ == "__main__":
@@ -52,4 +59,8 @@ if __name__ == "__main__":
         # 処理したい音声ファイル名と出力ファイル名を指定して実行する
         logger.error("Usage: python3 annotation_speech_segment.py audio.m4a output.csv")
     else:
-        main(args[1], args[2])
+        input_audio_file = args[1]
+        output_csv_file = args[2]
+        logger.info(f"Input audio file: {input_audio_file}")
+        logger.info(f"Output CSV file: {output_csv_file}")
+        main(input_audio_file, output_csv_file)
