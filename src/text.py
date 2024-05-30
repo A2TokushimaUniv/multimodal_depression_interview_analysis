@@ -2,6 +2,7 @@ from transformers import BertTokenizer, BertModel
 import torch
 
 
+# TODO: GiNZAに変更する
 def get_bert_feature(text):
     tokenizer = BertTokenizer.from_pretrained("cl-tohoku/bert-base-japanese")
     model = BertModel.from_pretrained("cl-tohoku/bert-base-japanese")

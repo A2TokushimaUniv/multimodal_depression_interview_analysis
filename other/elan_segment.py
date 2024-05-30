@@ -36,7 +36,7 @@ def main(audio_file, output_file):
                 model="whisper-1", file=open("tmp.mp3", "rb"), language="ja"
             )
             text = transcription.text
-            if len(text) > 1: # 2文字以上の発話のみ書き込む
+            if len(text) > 1:  # 2文字以上の発話のみ書き込む
                 # ミリ秒を秒に直してからCSVに書き込む
                 line = [start / 1000, end / 1000, text]
                 logger.info(line)

@@ -6,6 +6,7 @@ output_file_path = "../data/qa//riko/riko_before_15_clean.xlsx"
 
 igaku_df = pd.read_excel(igaku_file_path, engine="openpyxl")
 riko_df = pd.read_excel(riko_file_path, engine="openpyxl")
+
 # 理工学の事前アンケートから下から15行（header含まない）を切り出す
 riko_df = riko_df.tail(15)
 

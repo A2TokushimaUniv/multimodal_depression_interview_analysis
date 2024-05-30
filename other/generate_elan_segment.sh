@@ -7,18 +7,28 @@ igaku_m4a_files=$(find "$igaku_dir" -maxdepth 2 -type f -name "*_zoom_音声_被
 riko_m4a_files=$(find "$riko_dir" -maxdepth 2 -type f -name "audioNLP*.m4a")
 
 output_dir="./elan_output"
-
-# ディレクトリが存在するか確認
 if [ ! -d "$output_dir" ]; then
-  # 存在しない場合はディレクトリを作成
   mkdir -p "$output_dir"
-  echo "Directory created: $output_dir"
+fi
+
+if [ ! -d "$output_dir/riko" ]; then
+  mkdir -p "$output_dir/riko"
+fi
+
+if [ ! -d "$output_dir/igaku" ]; then
+  mkdir -p "$output_dir/igaku"
 fi
 
 for file in $igaku_m4a_files; do
-  python3 "elan_segment.py" "$file" "$output_dir/elan_$file.csv"
+  file_name=$(basename "$file" .m4a)
+  output_file_name="elan_$file_name.csv"
+  python3 "elan_segment.py" "$file" "$output_dir/igaku/$output_file_name"
+  echo "Successfully generated ELAN file: $output_dir/$output_file_name"
 done
 
 for file in $riko_m4a_files; do
-  python3 "elan_segment.py" "$file" "$output_dir/elan_$file.csv"
+  file_name=$(basename "$file" .m4a)
+  output_file_name="elan_$file_name.csv"
+  python3 "elan_segment.py" "$file" "$output_dir/riko/$output_file_name"
+  echo "Successfully generated ELAN file: $output_dir/$output_file_name"
 done
