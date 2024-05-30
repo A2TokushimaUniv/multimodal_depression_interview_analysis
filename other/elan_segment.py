@@ -21,8 +21,9 @@ def main(audio_file, output_file):
     audio_file = open(audio_file, "rb")
     try:
         audio = AudioSegment.from_file(audio_file, format="m4a")
-    except:
+    except Exception as e:
         logger.error("Failed to load audio file!")
+        logger.error(f"Exception: {e}")
         return
 
     logger.info("Detecting non-silent segments...")
@@ -39,7 +40,10 @@ def main(audio_file, output_file):
             subject_audio += audio[start:end]
             subject_audio.export("tmp.mp3", format="mp3")
             transcription = client.audio.transcriptions.create(
-                model="whisper-1", file=open("tmp.mp3", "rb"), language="ja"
+                model="whisper-1",
+                file=open("tmp.mp3", "rb"),
+                language="ja",
+                timeout=300,
             )
             text = transcription.text
             if len(text) > 1:  # 2文字以上の発話のみ書き込む
