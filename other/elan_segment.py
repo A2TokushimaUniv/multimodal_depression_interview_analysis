@@ -1,3 +1,8 @@
+"""
+# ELANでのアノテーションのための被験者の音声ファイルから、
+# 発話区間と発話からなるCSVを出力するスクリプト
+"""
+
 from pydub.silence import detect_nonsilent
 from openai import OpenAI
 import sys
@@ -61,7 +66,7 @@ if __name__ == "__main__":
     args = sys.argv
     if len(args) != 3:
         # 処理したい音声ファイル名と出力ファイル名を指定して実行する
-        logger.error("Usage: python3 annotation_speech_segment.py audio.m4a output.csv")
+        logger.error("Usage: python3 elan_segment.py audio.m4a output.csv")
     else:
         input_audio_file = args[1]
         output_csv_file = args[2]
