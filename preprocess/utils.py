@@ -21,3 +21,10 @@ def make_dir(dir_name):
     # TODO: TemporaryDirectoryで書き換える
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
+
+
+def make_processed_data_dir(output_dir):
+    for modal in ["text", "voice", "video"]:
+        for faculty in ["igaku", "riko"]:
+            os.makedirs(f"{output_dir}/{modal}/{faculty}", exist_ok=True)
+    return

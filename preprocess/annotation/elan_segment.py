@@ -5,7 +5,7 @@
 
 from pydub.silence import detect_nonsilent
 from openai import OpenAI
-import sys
+import argparse
 from logzero import logger
 from pydub import AudioSegment
 import os
@@ -63,13 +63,13 @@ def main(audio_file, output_file):
 
 
 if __name__ == "__main__":
-    args = sys.argv
-    if len(args) != 3:
-        # 処理したい音声ファイル名と出力ファイル名を指定して実行する
-        logger.error("Usage: python3 elan_segment.py audio.m4a output.csv")
-    else:
-        input_audio_file = args[1]
-        output_csv_file = args[2]
-        logger.info(f"Input audio file: {input_audio_file}")
-        logger.info(f"Output CSV file: {output_csv_file}")
-        main(input_audio_file, output_csv_file)
+    parser = argparse.ArgumentParser
+    parser.add_argument("input_audio_file", help="Input audio file path")
+    parser.add_argument("output_csv_file", help="Output CSV file path")
+    args = parser.parse_args()
+
+    input_audio_file = args.input_audio_file
+    output_csv_file = args.input_csv_file
+    logger.info(f"Input audio file: {input_audio_file}")
+    logger.info(f"Output CSV file: {output_csv_file}")
+    main(input_audio_file, output_csv_file)

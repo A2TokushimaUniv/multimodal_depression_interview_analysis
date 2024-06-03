@@ -4,7 +4,7 @@
 """
 
 import pandas as pd
-import sys
+import argparse
 from logzero import logger
 
 
@@ -146,14 +146,13 @@ def main(qa_file_path, output_file_path):
 
 
 if __name__ == "__main__":
-    args = sys.argv
-    if len(args) != 3:
-        # 処理したい音声ファイル名と出力ファイル名を指定して実行する
-        logger.error(
-            "Usage: python3 convert_before_qa.py 事前アンケート.xlsx output.xlsx"
-        )
-    qa_file_path = args[1]
-    output_file_path = args[2]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_qa_file", help="Path to the QA file")
+    parser.add_argument("output_file", help="Path to the output file")
+    args = parser.parse_args()
+
+    qa_file_path = args.input_qa_file
+    output_file_path = args.output_file
     logger.info("Input QA file: {}".format(qa_file_path))
     logger.info("Output file: {}".format(output_file_path))
     main(qa_file_path, output_file_path)
