@@ -139,7 +139,7 @@ if __name__ == "__main__":
     parser.add_argument("input_audio_path", help="Path to input audio file")
     parser.add_argument(
         "--output_dir",
-        default="processed_data",
+        default="preprocessed_data",
         required=True,
         help="Path to output directory",
     )

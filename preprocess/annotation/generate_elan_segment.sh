@@ -1,10 +1,10 @@
 #!/bin/bash
 
-igaku_dir="../data/voice/igaku"
-riko_dir="../data/voice/riko"
+igaku_dir="../data/raw_data/voice/igaku"
+riko_dir="../data/raw_data/voice/riko"
 
-igaku_m4a_files=$(find "$igaku_dir" -maxdepth 2 -type f -name "*_zoom_音声_被験者.m4a")
-riko_m4a_files=$(find "$riko_dir" -maxdepth 2 -type f -name "audioNLP*.m4a")
+igaku_m4a_files=$(find "$igaku_dir" -maxdepth 2 -type f -name "*_zoom_音声_被験者.m4a" | sort)
+riko_m4a_files=$(find "$riko_dir" -maxdepth 2 -type f -name "audioNLP*.m4a" | sort)
 
 output_dir="./elan_output"
 if [ ! -d "$output_dir" ]; then
