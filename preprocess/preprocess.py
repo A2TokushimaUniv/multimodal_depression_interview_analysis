@@ -159,5 +159,5 @@ if __name__ == "__main__":
     logger.info(f"Input audio: {audio_file}")
     logger.info(f"Output dir: {output_dir}")
     logger.info(f"Data of Faculty: {faculty}")
-    logger.info(f'Directory number: {dir_num}')
+    logger.info(f"Directory number: {dir_num}")
     main(video_file, audio_file, output_dir, faculty, dir_num)
