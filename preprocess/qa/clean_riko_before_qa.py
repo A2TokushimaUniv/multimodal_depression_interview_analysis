@@ -7,9 +7,13 @@ import pandas as pd
 
 
 def main():
-    igaku_file_path = "../data/qa/igaku/igaku_before_10.xlsx"  # 医学の事前アンケート
-    riko_file_path = "../data/qa/riko/riko_before_15.xlsx"  # 理工の事前アンケート
-    output_file_path = "../data/qa//riko/riko_before_15_clean.xlsx"
+    igaku_file_path = (
+        "../../data/raw_data/qa/igaku/igaku_before.xlsx"  # 医学の事前アンケート
+    )
+    riko_file_path = (
+        "../../data/raw_data/qa/riko/riko_before.xlsx"  # 理工の事前アンケート
+    )
+    output_file_path = "../../data/raw_data/qa/riko/riko_before_clean.xlsx"
 
     igaku_df = pd.read_excel(igaku_file_path, engine="openpyxl")
     riko_df = pd.read_excel(riko_file_path, engine="openpyxl")
