@@ -64,12 +64,11 @@ def main(audio_file, output_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser
-    parser.add_argument("input_audio_file", help="Input audio file path", required=True)
+    parser.add_argument("input_audio_file", help="Input audio file path")
     parser.add_argument(
         "--output_csv_file",
         help="Output CSV file path",
         default="output.csv",
-        required=True,
     )
     args = parser.parse_args()
 

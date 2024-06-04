@@ -81,6 +81,8 @@ def convert_lsas(lsas_df):
             return "境界域"
         elif 50 <= score <= 70:
             return "中等症"
+        elif score >= 71:
+            return "重症"
         else:
             return "なし"
 
@@ -182,12 +184,11 @@ def main(qa_file_path, output_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_qa_file", help="Path to the QA file", required=True)
+    parser.add_argument("input_qa_file", help="Path to the QA file")
     parser.add_argument(
         "--output_file",
         help="Path to the output file",
         default="output.xlsx",
-        required=True,
     )
     args = parser.parse_args()
 
