@@ -153,8 +153,8 @@ def convert_section(
     return converted_df
 
 
-def main(qa_file_path, output_file_path):
-    qa_df = pd.read_excel(qa_file_path, engine="openpyxl")
+def main(qa_file, output_file):
+    qa_df = pd.read_excel(qa_file, engine="openpyxl")
     timestamp_df = qa_df.iloc[:, 0]
     # 分析対象の列だけを抜き出す
     qa_df = qa_df.iloc[:, 7:-3]
@@ -178,7 +178,7 @@ def main(qa_file_path, output_file_path):
         timestamp_df, big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
     print(converted_df)
-    converted_df.to_excel(output_file_path, index=False)
+    converted_df.to_excel(output_file, index=False)
     return
 
 
@@ -192,8 +192,8 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    qa_file_path = args.input_qa_file
-    output_file_path = args.output_file
-    logger.info("Input QA file: {}".format(qa_file_path))
-    logger.info("Output file: {}".format(output_file_path))
-    main(qa_file_path, output_file_path)
+    qa_file = args.input_qa_file
+    output_file = args.output_file
+    logger.info("Input QA file: {}".format(qa_file))
+    logger.info("Output file: {}".format(output_file))
+    main(qa_file, output_file)

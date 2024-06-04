@@ -14,9 +14,9 @@ import csv
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 
-def _remove_tmp_file(tmp_file_path):
+def _remove_tmp_file(tmp_file):
     try:
-        os.remove(tmp_file_path)
+        os.remove(tmp_file)
     except OSError as e:
         logger.error(f"Failed to remove file: {e}")
 

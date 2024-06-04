@@ -7,16 +7,14 @@ import pandas as pd
 
 
 def main():
-    igaku_file_path = (
+    igaku_file = (
         "../../data/raw_data/qa/igaku/igaku_before.xlsx"  # 医学の事前アンケート
     )
-    riko_file_path = (
-        "../../data/raw_data/qa/riko/riko_before.xlsx"  # 理工の事前アンケート
-    )
-    output_file_path = "../../data/raw_data/qa/riko/riko_before_clean.xlsx"
+    riko_file = "../../data/raw_data/qa/riko/riko_before.xlsx"  # 理工の事前アンケート
+    output_file = "../../data/raw_data/qa/riko/riko_before_clean.xlsx"
 
-    igaku_df = pd.read_excel(igaku_file_path, engine="openpyxl")
-    riko_df = pd.read_excel(riko_file_path, engine="openpyxl")
+    igaku_df = pd.read_excel(igaku_file, engine="openpyxl")
+    riko_df = pd.read_excel(riko_file, engine="openpyxl")
 
     # 理工学の事前アンケートから下から15行（header含まない）を切り出す
     riko_df = riko_df.tail(15)
@@ -33,7 +31,7 @@ def main():
     assert len(igaku_headers) == len(cleaned_riko_headers)
 
     # 出力
-    riko_df.to_excel(output_file_path, index=False)
+    riko_df.to_excel(output_file, index=False)
     return
 
 
