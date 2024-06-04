@@ -19,7 +19,9 @@ def get_subject_segments(
 ):
     logger.info("Detecting subject segments...")
     subject_segments = detect_nonsilent(
-        audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
+        audio,
+        min_silence_len=min_silence_len,  # min_silence_len ミリ秒以上無音なら区間を抽出
+        silence_thresh=silence_thresh,  # slice_thresh dBFS以下で無音とみなす
     )
     # 取得した区間をpickleで保存
     if output_dir:

@@ -31,6 +31,7 @@ def convert_big5(big5_df):
 
 
 def convert_aq(aq_df):
+    aq_cutoff_point = 33
     aq_mapping = {
         "そうである": 1,
         "どちらかといえばそうである": 1,
@@ -38,11 +39,15 @@ def convert_aq(aq_df):
         "そうではない": 0,
     }
     converted_aq_df = df_mapping_sum(aq_df, aq_mapping, "AQ")
+    # AQ スコアが cutoff_point 以上であれば 1、そうでなければ 0 の列を追加
+    converted_aq_df["AQ_Flag"] = converted_aq_df["AQ"].apply(
+        lambda x: "あり" if x >= aq_cutoff_point else "なし"
+    )
     return converted_aq_df
 
 
 def convert_perci(perci_df):
-    # PERCIはもともと数値データなので変換せず合計するだけ
+    # PERCIはアンケート上ではもともと数値データなので変換せず合計するだけ
     converted_perci_df = df_mapping_sum(perci_df, None, "PERCI")
     return converted_perci_df
 
@@ -50,18 +55,48 @@ def convert_perci(perci_df):
 def convert_gad7(gad7_df):
     gad7_mapping = {"全くない": 0, "数日": 1, "半分以上": 2, "ほとんど毎日": 3}
     converted_gad7_df = df_mapping_sum(gad7_df, gad7_mapping, "GAD7")
+
+    def categorize_gad7_score(score):
+        if 5 <= score <= 9:
+            return "軽度"
+        elif 10 <= score <= 14:
+            return "中等度"
+        elif 15 <= score <= 21:
+            return "重度"
+        else:
+            return "なし"
+
+    converted_gad7_df["GAD7_Level"] = converted_gad7_df["GAD7"].apply(
+        categorize_gad7_score
+    )
     return converted_gad7_df
 
 
 def convert_lsas(lsas_df):
     lsas_mapping = {"０": 0, "１": 1, "２": 2, "３": 3}
     converted_lsas_df = df_mapping_sum(lsas_df, lsas_mapping, "LSAS")
+
+    def categorize_lsas_score(score):
+        if 30 <= score <= 40:
+            return "境界域"
+        elif 50 <= score <= 70:
+            return "中等症"
+        else:
+            return "なし"
+
+    converted_lsas_df["LSAS_Level"] = converted_lsas_df["LSAS"].apply(
+        categorize_lsas_score
+    )
     return converted_lsas_df
 
 
 def convert_phq9(phq9_df):
+    phq9_cutoff_point = 10
     phq_mapping = {"全くない": 0, "数日": 1, "半分以上": 2, "ほとんど毎日": 3}
     converted_phq9_df = df_mapping_sum(phq9_df, phq_mapping, "PHQ9")
+    converted_phq9_df["PHQ9_Flag"] = converted_phq9_df["PHQ9"].apply(
+        lambda x: "あり" if x >= phq9_cutoff_point else "なし"
+    )
     return converted_phq9_df
 
 
