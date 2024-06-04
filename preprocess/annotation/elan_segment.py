@@ -40,7 +40,7 @@ def main(audio_file, output_file):
     )
 
     for start, end in subject_segments:
-        if end - start > 300:  # 発話区間が0.3s以上のとき抜き出す
+        if end - start > 500:  # 発話区間が0.5s以上のとき抜き出す
             subject_audio = AudioSegment.empty()
             subject_audio += audio[start:end]
             subject_audio.export("tmp.mp3", format="mp3")

@@ -9,3 +9,4 @@ transformers
 pillow
 av
 pandas
+moviepy

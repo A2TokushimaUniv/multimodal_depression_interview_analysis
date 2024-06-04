@@ -3,10 +3,10 @@ from utils import load_dotenv, make_processed_data_dir
 import os
 from openai import OpenAI
 from pydub import AudioSegment
-import cv2
 import pickle
 from logzero import logger
 import argparse
+from moviepy.editor import VideoFileClip, concatenate_videoclips
 
 load_dotenv()
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -25,8 +25,8 @@ def get_subject_segments(
     )
     subject_segments = []
     for start, end in nonsilent_segments:
-        if end - start > 300:  # 発話区間が0.3s以上のとき抜き出す
-            subject_segments.append([start, end])
+        if end - start > 500:  # 発話区間が0.3s以上のとき抜き出す
+            subject_segments.append((start, end))
     # 取得した区間をpickleで保存
     if output_dir:
         with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
@@ -60,7 +60,9 @@ def get_subject_audio_text(
         subject_audio_sum += audio[start:end]
         subject_audio = AudioSegment.empty()
         subject_audio += audio[start:end]
-        utterance_audio_path = f"{audio_output_dir}/utterance{utterance_count}.mp3"
+        utterance_audio_path = os.path.join(
+            audio_output_dir, f"utterance_{utterance_count}.mp3"
+        )
         # 発話ごとに音声を保存
         subject_audio.export(utterance_audio_path, format="mp3")
         # 発話ごとのテキストを抽出
@@ -74,46 +76,33 @@ def get_subject_audio_text(
     return
 
 
-# カウンセリングの動画データから被験者のみのフレームを取得する
-# TODO: ここ多分バグってるな、、
-def get_subject_frames(
+def get_subject_video(
     video_file, subject_segments, video_output_dir, video_output_file
 ):
-    cap = cv2.VideoCapture(video_file)
-    frame_rate = cap.get(cv2.CAP_PROP_FPS)
+    video = VideoFileClip(video_file)
+    # 動画の切り抜きと保存
+    clips = []
+    for i, (start_ms, end_ms) in enumerate(subject_segments):
+        start_time = start_ms / 1000  # 秒に変換
+        end_time = end_ms / 1000  # 秒に変換
+        clip = video.subclip(start_time, end_time)
+        clip_filename = f"utterance_{i+1}.mp4"
+        clip.write_videofile(
+            os.path.join(video_output_dir, clip_filename), codec="libx264"
+        )
+        clips.append(clip)
+    # 切り抜いた動画を結合
+    final_clip = concatenate_videoclips(clips)
+    final_clip.write_videofile(video_output_file, codec="libx264")
 
-    subject_frames = []
-    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
-    out = cv2.VideoWriter(
-        video_output_file,
-        fourcc,
-        frame_rate,
-        (
-            int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-        ),
-    )
-
-    logger.info("Extracting subject frames...")
-    # TODO: 発話ごとに動画を保存する
-    for start, end in subject_segments:
-        cap.set(cv2.CAP_PROP_POS_FRAMES, int(start * frame_rate))
-
-        while True:
-            ret, frame = cap.read()
-            current_frame = cap.get(cv2.CAP_PROP_POS_FRAMES)
-            current_time = current_frame / frame_rate
-
-            if current_time > end or not ret:
-                break
-
-            subject_frames.append(frame)
-            out.write(frame)
-
-    out.release()
-    cap.release()
-    cv2.destroyAllWindows()
-    logger.info(f"Successfully get subject frames at {video_output_file}!")
+    # リソースを解放
+    video.reader.close()
+    video.audio.reader.close_proc()
+    for clip in clips:
+        clip.reader.close()
+        clip.audio.reader.close_proc()
+    logger.info(f"Successfully get subject video at {video_output_file}!")
+    return
 
 
 def main(video_file, audio_file, output_dir, faculty):
@@ -125,9 +114,7 @@ def main(video_file, audio_file, output_dir, faculty):
     # ↑を利用して音声データから被験者の音声データを抜き出す
     audio_output_file_name = os.path.splitext(os.path.basename(audio_file))[0]
     audio_output_dir = os.path.join(output_dir, "voice", faculty)
-    audio_output_file = os.path.join(
-        f"{audio_output_dir}", f"{audio_output_file_name}.mp3"
-    )
+    audio_output_file = os.path.join(audio_output_dir, f"{audio_output_file_name}.mp3")
     text_output_file = os.path.join(
         output_dir, "text", faculty, f"{audio_output_file_name}.txt"
     )
@@ -137,12 +124,8 @@ def main(video_file, audio_file, output_dir, faculty):
 
     video_output_file_name = os.path.splitext(os.path.basename(video_file))[0]
     video_output_dir = os.path.join(output_dir, "video", faculty)
-    video_output_file = os.path.join(
-        f"{video_output_dir}", f"{video_output_file_name}.mp4"
-    )
-    get_subject_frames(
-        video_file, subject_segments, video_output_dir, video_output_file
-    )
+    video_output_file = os.path.join(video_output_dir, f"{video_output_file_name}.mp4")
+    get_subject_video(video_file, subject_segments, video_output_dir, video_output_file)
     return
 
 
