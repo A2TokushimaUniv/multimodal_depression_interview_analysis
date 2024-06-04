@@ -67,6 +67,7 @@ def get_subject_audio_text(
         subject_audio.export(utterance_audio_path, format="mp3")
         # 発話ごとのテキストを抽出
         subject_text += _get_subject_text(utterance_audio_path)
+        utterance_count += 1
     # 被験者の区間のみの音声データを保存
     subject_audio_sum.export(audio_output_file, format="mp3")
     logger.info(f"Successfully get subject audio at {audio_output_file}!")
@@ -105,25 +106,25 @@ def get_subject_video(
     return
 
 
-def main(video_file, audio_file, output_dir, faculty):
-    make_processed_data_dir(output_dir)
+def main(video_file, audio_file, output_dir, faculty, dir_num):
+    make_processed_data_dir(output_dir, dir_num)
     # pydubで音声ファイルを開く
     audio = AudioSegment.from_file(audio_file)
     # 音声データから被験者が喋っている区間のミリ秒を取得する
     subject_segments = get_subject_segments(audio)
     # ↑を利用して音声データから被験者の音声データを抜き出す
     audio_output_file_name = os.path.splitext(os.path.basename(audio_file))[0]
-    audio_output_dir = os.path.join(output_dir, "voice", faculty)
+    audio_output_dir = os.path.join(output_dir, "voice", faculty, dir_num)
     audio_output_file = os.path.join(audio_output_dir, f"{audio_output_file_name}.mp3")
     text_output_file = os.path.join(
-        output_dir, "text", faculty, f"{audio_output_file_name}.txt"
+        output_dir, "text", faculty, dir_num, f"{audio_output_file_name}.txt"
     )
     get_subject_audio_text(
         audio, subject_segments, audio_output_dir, audio_output_file, text_output_file
     )
 
     video_output_file_name = os.path.splitext(os.path.basename(video_file))[0]
-    video_output_dir = os.path.join(output_dir, "video", faculty)
+    video_output_dir = os.path.join(output_dir, "video", faculty, dir_num)
     video_output_file = os.path.join(video_output_dir, f"{video_output_file_name}.mp4")
     get_subject_video(video_file, subject_segments, video_output_dir, video_output_file)
     return
@@ -145,15 +146,18 @@ if __name__ == "__main__":
         required=True,
         help="Faculty of the subject",
     )
+    parser.add_argument("--dir_num", default="0", help="Directory number")
 
     args = parser.parse_args()
     video_file = args.input_video
     audio_file = args.input_audio
     output_dir = args.output_dir
     faculty = args.faculty
+    dir_num = args.dir_num
 
     logger.info(f"Input video: {video_file}")
     logger.info(f"Input audio: {audio_file}")
     logger.info(f"Output dir: {output_dir}")
     logger.info(f"Data of Faculty: {faculty}")
-    main(video_file, audio_file, output_dir, faculty)
+    logger.info(f'Directory number: {dir_num}')
+    main(video_file, audio_file, output_dir, faculty, dir_num)

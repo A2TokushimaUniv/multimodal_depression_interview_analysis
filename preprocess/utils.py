@@ -23,9 +23,11 @@ def make_dir(dir_name):
         os.makedirs(dir_name)
 
 
-def make_processed_data_dir(output_dir):
+def make_processed_data_dir(output_dir, dir_num):
     for modal in ["text", "voice", "video"]:
         for faculty in ["igaku", "riko"]:
-            os.makedirs(f"{output_dir}/{modal}/{faculty}", exist_ok=True)
+            os.makedirs(
+                os.path.join(output_dir, modal, faculty, dir_num), exist_ok=True
+            )
     logger.info("Successfully make processed data directory!")
     return
