@@ -21,11 +21,11 @@ output_dir="../data/preprocessed_data"
 
 
 for (( i=0; i<$igaku_file_count; i++ )); do
-  python3 preprocess.py "${igaku_m4a_file_array[$i]}" "${igaku_mp4_file_array[$i]}" --output_dir=$output_dir --faculty=igaku
+  python3 preprocess.py  --input_video "${igaku_mp4_file_array[$i]}" --input_audio "${igaku_m4a_file_array[$i]}" --output_dir=$output_dir --faculty=igaku
 done
 
 
 for (( i=0; i<$riko_file_count; i++ )); do
-  python3 preprocess.py "${riko_m4a_file_array[$i]}" "${riko_mp4_file_array[$i]}" --output_dir=$output_dir --faculty=riko
+  python3 preprocess.py --input_video "${riko_mp4_file_array[$i]}" --input_audio "${riko_m4a_file_array[$i]}" --output_dir=$output_dir --faculty=riko
 done
 

@@ -22,11 +22,11 @@ fi
 for file in $igaku_m4a_files; do
   file_name=$(basename "$file" .m4a)
   output_file_name="elan_$file_name.csv"
-  python3 "elan_segment.py" "$file" "$output_dir/igaku/$output_file_name"
+  python3 "elan_segment.py" "$file" --output_csv_file "$output_dir/igaku/$output_file_name"
 done
 
 for file in $riko_m4a_files; do
   file_name=$(basename "$file" .m4a)
   output_file_name="elan_$file_name.csv"
-  python3 "elan_segment.py" "$file" "$output_dir/riko/$output_file_name"
+  python3 "elan_segment.py" "$file" --output_csv_file "$output_dir/riko/$output_file_name"
 done

@@ -64,12 +64,17 @@ def main(audio_file, output_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser
-    parser.add_argument("input_audio_file", help="Input audio file path")
-    parser.add_argument("output_csv_file", help="Output CSV file path")
+    parser.add_argument("input_audio_file", help="Input audio file path", required=True)
+    parser.add_argument(
+        "--output_csv_file",
+        help="Output CSV file path",
+        default="output.csv",
+        required=True,
+    )
     args = parser.parse_args()
 
     input_audio_file = args.input_audio_file
-    output_csv_file = args.input_csv_file
+    output_csv_file = args.output_csv_file
     logger.info(f"Input audio file: {input_audio_file}")
     logger.info(f"Output CSV file: {output_csv_file}")
     main(input_audio_file, output_csv_file)

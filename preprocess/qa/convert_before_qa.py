@@ -182,8 +182,13 @@ def main(qa_file_path, output_file_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_qa_file", help="Path to the QA file")
-    parser.add_argument("output_file", help="Path to the output file")
+    parser.add_argument("input_qa_file", help="Path to the QA file", required=True)
+    parser.add_argument(
+        "--output_file",
+        help="Path to the output file",
+        default="output.xlsx",
+        required=True,
+    )
     args = parser.parse_args()
 
     qa_file_path = args.input_qa_file

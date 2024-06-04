@@ -141,8 +141,8 @@ def main(video_file_path, audio_file_path, output_dir, faculty):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_video_path", help="Path to input video file")
-    parser.add_argument("input_audio_path", help="Path to input audio file")
+    parser.add_argument("--input_video", help="Path to input video file", required=True)
+    parser.add_argument("--input_audio", help="Path to input audio file", required=True)
     parser.add_argument(
         "--output_dir",
         default="preprocessed_data",
@@ -157,8 +157,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    video_file_path = args.input_video_path
-    audio_file_path = args.input_audio_path
+    video_file_path = args.input_video
+    audio_file_path = args.input_audio
     output_dir = args.output_dir
     faculty = args.faculty
 
