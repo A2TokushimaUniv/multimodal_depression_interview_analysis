@@ -17,6 +17,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 def get_subject_segments(
     audio, output_dir=None, min_silence_len=3000, silence_thresh=-50
 ):
+    logger.info("Detecting subject segments...")
     subject_segments = detect_nonsilent(
         audio, min_silence_len=min_silence_len, silence_thresh=silence_thresh
     )
@@ -54,6 +55,7 @@ def get_subject_audio_text(
 ):
     subject_audio_sum = AudioSegment.empty()
     subject_text = ""
+    logger.info("Extracting subject audio and text...")
     for start, end in subject_segments:
         if end - start > 300:  # 発話区間が0.3s以上のとき抜き出す
             subject_audio_sum += audio[start:end]
@@ -64,9 +66,10 @@ def get_subject_audio_text(
             _remove_tmp_file("tmp.mp3")
     # 被験者の区間のみの音声データを保存
     subject_audio_sum.export(audio_output_file_path, format="mp3")
+    logger.info(f"Successfully get subject audio at {audio_output_file_path}!")
     with open(text_output_file_path, mode="w", encoding="utf-8") as f:
         f.write(subject_text)
-    logger.info("Successfully get subject audio and text!")
+    logger.info(f"Successfully get subject text at {text_output_file_path}!")
     return
 
 
@@ -87,6 +90,7 @@ def get_subject_frames(video_file, subject_segments, video_output_file_path):
         ),
     )
 
+    logger.info("Extracting subject frames...")
     for start, end in subject_segments:
         cap.set(cv2.CAP_PROP_POS_FRAMES, int(start * frame_rate))
 
@@ -104,7 +108,7 @@ def get_subject_frames(video_file, subject_segments, video_output_file_path):
     out.release()
     cap.release()
     cv2.destroyAllWindows()
-    logger.info("Successfully get subject frames!")
+    logger.info(f"Successfully get subject frames at {video_output_file_path}!")
 
 
 def main(video_file_path, audio_file_path, output_dir, faculty):

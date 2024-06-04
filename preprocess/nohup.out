@@ -1,0 +1,4 @@
+[I 240603 20:36:26 preprocess:159] Input video: ../data/raw_data/voice/igaku/01/001_zoom_音声_被験者.m4a
+[I 240603 20:36:26 preprocess:160] Input audio: ../data/raw_data/video/igaku/001_zoom_映像・音声.mp4_10.mp4
+[I 240603 20:36:26 preprocess:161] Output dir: ../data/preprocessed_data
+[I 240603 20:36:26 preprocess:162] Data of Faculty: igaku

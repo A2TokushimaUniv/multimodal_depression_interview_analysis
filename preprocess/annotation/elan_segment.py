@@ -59,7 +59,7 @@ def main(audio_file, output_file):
                     writer = csv.writer(f)
                     writer.writerow(line)
             _remove_tmp_file("tmp.mp3")
-    logger.info("Successfully generated ELAN CSV file: {}".format(output_file))
+    logger.info(f"Successfully generated ELAN CSV file at {output_file}!")
 
 
 if __name__ == "__main__":
