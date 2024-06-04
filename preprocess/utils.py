@@ -27,4 +27,5 @@ def make_processed_data_dir(output_dir):
     for modal in ["text", "voice", "video"]:
         for faculty in ["igaku", "riko"]:
             os.makedirs(f"{output_dir}/{modal}/{faculty}", exist_ok=True)
+    logger.info("Successfully make processed data directory!")
     return
