@@ -63,17 +63,17 @@ def get_subject_audio_text(
         subject_audio = AudioSegment.empty()
         subject_audio += audio[start:end]
         utterance_audio_path = os.path.join(
-            audio_output_dir, f"utterance_{utterance_count}.mp3"
+            audio_output_dir, f"utterance_{utterance_count}.wav"
         )
         # 発話ごとに音声を保存
-        subject_audio.export(utterance_audio_path, format="mp3")
+        subject_audio.export(utterance_audio_path, format="wav")
         # 発話ごとのテキストを抽出
         text_list = get_subject_text_list(utterance_audio_path, start, end)
         if text_list:
             subject_text_list.append(text_list)
         utterance_count += 1
     # 被験者の区間のみの音声データを保存
-    subject_audio_sum.export(audio_output_file, format="mp3")
+    subject_audio_sum.export(audio_output_file, format="wav")
     logger.info(f"Successfully get subject audio at {audio_output_file}!")
     with open(text_output_file, mode="w", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -120,7 +120,7 @@ def main(video_file, audio_file, output_dir, faculty, dir_num):
     # ↑を利用して音声データから被験者の音声データを抜き出す
     audio_output_file_name = os.path.splitext(os.path.basename(audio_file))[0]
     audio_output_dir = os.path.join(output_dir, "voice", faculty, dir_num)
-    audio_output_file = os.path.join(audio_output_dir, f"{audio_output_file_name}.mp3")
+    audio_output_file = os.path.join(audio_output_dir, f"{audio_output_file_name}.wav")
     text_output_file = os.path.join(
         output_dir, "text", faculty, dir_num, f"{audio_output_file_name}.csv"
     )

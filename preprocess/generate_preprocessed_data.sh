@@ -17,7 +17,7 @@ riko_m4a_file_array=($riko_m4a_files)
 riko_mp4_file_array=($riko_mp4_files)
 riko_file_count=${#riko_m4a_file_array[@]}
 
-output_dir="../data/preprocessed_data"
+output_dir="../data/test_data"
 
 
 for (( i=0; i<$igaku_file_count; i++ )); do

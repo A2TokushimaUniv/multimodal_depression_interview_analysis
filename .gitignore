@@ -746,5 +746,6 @@ ipython_config.py
 data/
 output/
 other/elan_output
-other/tmp.mp3
+other/tmp.wav
 *.out
+resources/
