@@ -33,7 +33,6 @@ def main(audio_file, output_file):
 
     logger.info("Detecting non-silent segments...")
     subject_segments = detect_nonsilent(
-        # ここのパラメータによって出力されるテキストの長さが変わる
         audio,
         min_silence_len=3000,  # min_silence_len ミリ秒以上無音なら区間を抽出
         silence_thresh=-50,  # slice_thresh dBFS以下で無音とみなす
