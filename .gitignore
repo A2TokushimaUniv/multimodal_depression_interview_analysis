@@ -748,4 +748,4 @@ output/
 other/elan_output
 other/tmp.wav
 *.out
-resources/
+analysis/sentiment_polarity

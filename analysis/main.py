@@ -11,7 +11,9 @@ def main():
     before_sum_df = analyze_opensmile(before_sum_df)
     before_sum_df = analyze_deepface(before_sum_df)
     before_sum_df = analyze_ginza(before_sum_df)
-    before_sum_df.to_csv("../data/preprocessed_data/qa/before_sum_features.csv")
+    before_sum_df.to_csv(
+        "../data/preprocessed_data/qa/before_sum_features.csv", index=False
+    )
     return
 
 

@@ -20,12 +20,12 @@ def calculate_features(audio_file):
 
 def analyze_opensmile(before_sum_df):
     riko_audio_files = glob.glob(
-        os.path.join("../data/preprocessed_data/audio/riko", "**", "audioNLP*.wav"),
+        os.path.join("../data/preprocessed_data/voice/riko", "*", "audioNLP*.wav"),
         recursive=True,
     )
     igaku_audio_files = glob.glob(
         os.path.join(
-            "../data/preprocessed_data/video/igaku", "**", "*_zoom_音声_被験者*.wav"
+            "../data/preprocessed_data/voice/igaku", "*", "*_zoom_音声_被験者*.wav"
         ),
         recursive=True,
     )
@@ -58,4 +58,5 @@ def analyze_opensmile(before_sum_df):
         before_sum_df.loc[
             before_sum_df["タイムスタンプ"] == f"psy_c_{id}", "Jitter"
         ] = jitter
+
     return before_sum_df
