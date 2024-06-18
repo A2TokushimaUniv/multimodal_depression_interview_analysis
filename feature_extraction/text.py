@@ -7,16 +7,16 @@ import spacy
 nlp = spacy.load("ja_ginza")
 
 column_names = {
-    "NegativeNounCount": "N_Noun",
-    "PositiveNounCount": "P_Noun",
-    "NegativeVerbAdjCount": "N_VerbAdj",
-    "PositiveVerbAdjCount": "P_VerbAdj",
-    "NegativeWordCount": "N_Word",
-    "PositiveWordCount": "P_Word",
-    "PercentageNegativeNouns": "Per_Noun_Neg",
-    "PercentagePositiveNouns": "Per_Noun_Pos",
-    "PercentageNegativeVerbAdj": "Per_VerbAdj_Neg",
-    "PercentagePositiveVerbAdj": "Per_VerbAdj_Pos",
+    "NegativeNounCount": "Neg_Noun_Count",
+    "PositiveNounCount": "Pos_Noun_Count",
+    "NegativeVerbAdjCount": "Neg_VerbAdj_Count",
+    "PositiveVerbAdjCount": "Pos_VerbAdj_Count",
+    "PositiveWordCount": "Pos_Word_Count",
+    "NegativeWordCount": "Neg_Word_Count",
+    "PercentageNegativeNouns": "Per_Neg_Noun",
+    "PercentagePositiveNouns": "Per_Pos_Noun",
+    "PercentageNegativeVerbAdj": "Per_Neg_VerbAdj",
+    "PercentagePositiveVerbAdj": "Per_Pos_VerbAdj",
 }
 
 

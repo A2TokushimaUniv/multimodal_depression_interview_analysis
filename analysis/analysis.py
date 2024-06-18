@@ -20,7 +20,7 @@ def main():
     correlation_matrix.to_csv("correlation_matrix.csv")
 
     # ヒートマップ
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(20, 15))
     sns.heatmap(
         correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1, center=0
     )
