@@ -66,15 +66,15 @@ def analyze_ginza(before_sum_df):
         negative_noun_count, negative_verb_count = count_negative_words(
             texts, negative_nouns, negative_verbs
         )
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_noun_count"
-        ] = negative_noun_count
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_verb_count"
-        ] = negative_verb_count
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_word_count"
-        ] = negative_noun_count + negative_verb_count
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_Noun_count"] = (
+            negative_noun_count
+        )
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_verb_count"] = (
+            negative_verb_count
+        )
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_word_count"] = (
+            negative_noun_count + negative_verb_count
+        )
 
     for igaku_text_file in igaku_text_files:
         logger.info(f"Counting negative words from {igaku_text_file}.")
@@ -85,15 +85,15 @@ def analyze_ginza(before_sum_df):
         negative_noun_count, negative_verb_count = count_negative_words(
             texts, negative_nouns, negative_verbs
         )
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_noun_count"
-        ] = negative_noun_count
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_verb_count"
-        ] = negative_verb_count
-        before_sum_df.loc[
-            before_sum_df["タイムスタンプ"] == target, "Negative_word_count"
-        ] = negative_noun_count + negative_verb_count
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_noun_count"] = (
+            negative_noun_count
+        )
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_verb_count"] = (
+            negative_verb_count
+        )
+        before_sum_df.loc[before_sum_df["タイムスタンプ"] == target, "N_word_count"] = (
+            negative_noun_count + negative_verb_count
+        )
 
     logger.info(before_sum_df)
     return before_sum_df
