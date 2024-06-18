@@ -41,8 +41,8 @@ def count_negative_words(texts, negative_nouns, negative_verb_adj):
                     logger.info(f"Negative verb or adj：{token.lemma_}")
                     negative_verb_count += 1
 
-    percentage_negative_nouns = negative_noun_count / total_noun_count
-    percentage_negative_verb_adj = negative_verb_count / total_verb_adj_count
+    percentage_negative_nouns = (negative_noun_count / total_noun_count) * 100
+    percentage_negative_verb_adj = (negative_verb_count / total_verb_adj_count) * 100
     logger.info(f"Negative noun count: {negative_noun_count}")
     logger.info(
         f"Percentage of negative nouns among all nouns: {percentage_negative_nouns}"
@@ -80,8 +80,8 @@ def count_positive_words(texts, positive_nouns, positive_verb_adj):
                     logger.info(f"Positive verb or adj：{token.lemma_}")
                     positive_verb_count += 1
 
-    percentage_positive_nouns = positive_noun_count / total_noun_count
-    percentage_positive_verb_adj = positive_verb_count / total_verb_adj_count
+    percentage_positive_nouns = (positive_noun_count / total_noun_count) * 100
+    percentage_positive_verb_adj = (positive_verb_count / total_verb_adj_count) * 100
     logger.info(f"Positive noun count: {positive_noun_count}")
     logger.info(
         f"Percentage of positive nouns among all nouns: {percentage_positive_nouns}"
@@ -138,7 +138,7 @@ def get_positive_verb_adj(verbs_file):
     return positive_verbs
 
 
-def add_result(
+def add_results(
     before_sum_df,
     target,
     negative_noun_count,
@@ -229,7 +229,7 @@ def analyze_ginza(before_sum_df):
             percentage_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
 
-        before_sum_df = add_result(
+        before_sum_df = add_results(
             before_sum_df,
             target,
             negative_noun_count,
@@ -261,7 +261,7 @@ def analyze_ginza(before_sum_df):
             percentage_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
 
-        before_sum_df = add_result(
+        before_sum_df = add_results(
             before_sum_df,
             target,
             negative_noun_count,

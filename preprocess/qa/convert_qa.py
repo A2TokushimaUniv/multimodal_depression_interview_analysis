@@ -153,38 +153,40 @@ def convert_section(
     return converted_df
 
 
-def main(qa_file, output_file):
-    qa_df = pd.read_excel(qa_file, engine="openpyxl")
-    timestamp_df = qa_df.iloc[:, 0]
+def main(before_qa_file, after_qa_file, output_file):
+    before_qa_df = pd.read_csv(before_qa_file)
+    after_qa_df = pd.read_csv(after_qa_file)
+    timestamp_df = before_qa_df.iloc[:, 0]
     # 分析対象の列だけを抜き出す
-    qa_df = qa_df.iloc[:, 7:-3]
+    before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
-    big5_df = qa_df.iloc[:, 0:10]
+    big5_df = before_qa_df.iloc[:, 0:10]
     # AQは50問
-    aq_df = qa_df.iloc[:, 10:60]
+    aq_df = before_qa_df.iloc[:, 10:60]
     # PERCIは32問
-    perci_df = qa_df.iloc[:, 60:92]
+    perci_df = before_qa_df.iloc[:, 60:92]
     # GAD7は8問
     # GAD7の最後の一問は集計に使わない
-    gad7_df = qa_df.iloc[:, 92:99]
+    gad7_df = before_qa_df.iloc[:, 92:99]
     # LSASは24×2問
-    lsas_df = qa_df.iloc[:, 100:148]
+    lsas_df = before_qa_df.iloc[:, 100:148]
     # PHQ9は10問
     # PHQ9の最後の一問は集計に使わない
-    phq9_df = qa_df.iloc[:, 148:157]
+    phq9_df = before_qa_df.iloc[:, 148:157]
     # SISは6問
-    sis_df = qa_df.iloc[:, 158:164]
+    sis_df = before_qa_df.iloc[:, 158:164]
     converted_df = convert_section(
         timestamp_df, big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
     print(converted_df)
-    converted_df.to_excel(output_file, index=False)
+    converted_df.to_csv(output_file, index=False)
     return
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_qa_file", help="Path to the QA file")
+    parser.add_argument("input_before_qa", help="Path to the Before QA file")
+    parser.add_argument("input_after_qa", help="Path to the After QA file")
     parser.add_argument(
         "--output_file",
         help="Path to the output file",
@@ -192,8 +194,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    qa_file = args.input_qa_file
+    before_qa_file = args.input_before_qa
+    after_qa_file = args.input_after_qa
     output_file = args.output_file
-    logger.info("Input QA file: {}".format(qa_file))
+    logger.info("Input Before QA file: {}".format(before_qa_file))
+    logger.info("input After QA file: {}".format(after_qa_file))
     logger.info("Output file: {}".format(output_file))
-    main(qa_file, output_file)
+    main(before_qa_file, after_qa_file, output_file)
