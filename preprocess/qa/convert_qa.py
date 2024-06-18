@@ -16,8 +16,8 @@ def df_mapping_sum(df, mapping, column_name):
     return converted_df
 
 
-def convert_big5(big5_df):
-    big5_mapping = {
+def big5_mapping_sum(big5_standard_df, big5_inverse_df, column_name):
+    standard_big5_mapping = {
         "全く違うと思う": 1,
         "おおよそ違うと思う": 2,
         "少し違うと思う": 3,
@@ -26,24 +26,43 @@ def convert_big5(big5_df):
         "まあまあそう思う": 6,
         "強くそう思う": 7,
     }
+    inverse_big5_mapping = {
+        key: 8 - value for key, value in standard_big5_mapping.items()
+    }
 
-    big5_extrovert_df = big5_df.iloc[:, 0:2]
-    big5_extrovert_sum_df = df_mapping_sum(
-        big5_extrovert_df, big5_mapping, "BIG5_Extrovert"
+    big5_standard_df = big5_standard_df.map(standard_big5_mapping)
+    big5_inverse_df = big5_inverse_df.map(inverse_big5_mapping)
+    big5_df = pd.concat([big5_standard_df, big5_inverse_df], axis=1)
+    converted_df = pd.DataFrame(big5_df.sum(axis=1), columns=[column_name])
+    return converted_df
+
+
+def convert_big5(big5_df):
+    big5_extrovert_df = big5_df.iloc[:, [0, 5]]
+    big5_extrovert_sum_df = big5_mapping_sum(
+        big5_extrovert_df.iloc[:, 0], big5_extrovert_df.iloc[:, 1], "BIG5_Extrovert"
     )
-    big5_open_df = big5_df.iloc[:, 2:4]
-    big5_open_sum_df = df_mapping_sum(big5_open_df, big5_mapping, "BIG5_Open")
-    big5_neurotic_df = big5_df.iloc[:, 4:6]
-    big5_neurotic_sum_df = df_mapping_sum(
-        big5_neurotic_df, big5_mapping, "BIG5_Neurotic"
+
+    big5_cooperative_df = big5_df.iloc[:, [1, 6]]
+    big5_cooperative_sum_df = big5_mapping_sum(
+        big5_cooperative_df.iloc[:, 1],
+        big5_cooperative_df.iloc[:, 0],
+        "BIG5_Cooperative",
     )
-    bg5_diligence_df = big5_df.iloc[:, 6:8]
-    big5_diligence_sum_df = df_mapping_sum(
-        bg5_diligence_df, big5_mapping, "BIG5_Diligence"
+
+    big5_diligence_df = big5_df.iloc[:, [2, 7]]
+    big5_diligence_sum_df = big5_mapping_sum(
+        big5_diligence_df.iloc[:, 0], big5_diligence_df.iloc[:, 1], "BIG5_Diligence"
     )
-    big5_cooperative_df = big5_df.iloc[:, 8:10]
-    big5_cooperative_sum_df = df_mapping_sum(
-        big5_cooperative_df, big5_mapping, "BIG5_Cooperative"
+
+    big5_neurotic_df = big5_df.iloc[:, [3, 8]]
+    big5_neurotic_sum_df = big5_mapping_sum(
+        big5_neurotic_df.iloc[:, 0], big5_neurotic_df.iloc[:, 1], "BIG5_Neurotic"
+    )
+
+    big5_open_df = big5_df.iloc[:, [4, 9]]
+    big5_open_sum_df = big5_mapping_sum(
+        big5_open_df.iloc[:, 0], big5_open_df.iloc[:, 1], "BIG5_Open"
     )
 
     converted_big5_df = pd.concat(
