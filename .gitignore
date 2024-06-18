@@ -748,3 +748,5 @@ output/
 other/elan_output
 other/tmp.wav
 *.out
+analysis/*.csv
+analysis/*.png
