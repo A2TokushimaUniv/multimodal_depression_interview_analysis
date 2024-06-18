@@ -11,7 +11,7 @@ from logzero import logger
 def df_mapping_sum(df, mapping, column_name):
     if mapping:
         for column in df.columns:
-            df[column] = df[column].map(mapping)
+            df.loc[:, column] = df[column].map(mapping)
     converted_df = pd.DataFrame(df.sum(axis=1), columns=[column_name])
     return converted_df
 
@@ -26,7 +26,36 @@ def convert_big5(big5_df):
         "まあまあそう思う": 6,
         "強くそう思う": 7,
     }
-    converted_big5_df = df_mapping_sum(big5_df, big5_mapping, "BIG5")
+
+    big5_extrovert_df = big5_df.iloc[:, 0:2]
+    big5_extrovert_sum_df = df_mapping_sum(
+        big5_extrovert_df, big5_mapping, "BIG5_Extrovert"
+    )
+    big5_open_df = big5_df.iloc[:, 2:4]
+    big5_open_sum_df = df_mapping_sum(big5_open_df, big5_mapping, "BIG5_Open")
+    big5_neurotic_df = big5_df.iloc[:, 4:6]
+    big5_neurotic_sum_df = df_mapping_sum(
+        big5_neurotic_df, big5_mapping, "BIG5_Neurotic"
+    )
+    bg5_diligence_df = big5_df.iloc[:, 6:8]
+    big5_diligence_sum_df = df_mapping_sum(
+        bg5_diligence_df, big5_mapping, "BIG5_Diligence"
+    )
+    big5_cooperative_df = big5_df.iloc[:, 8:10]
+    big5_cooperative_sum_df = df_mapping_sum(
+        big5_cooperative_df, big5_mapping, "BIG5_Cooperative"
+    )
+
+    converted_big5_df = pd.concat(
+        [
+            big5_extrovert_sum_df,
+            big5_open_sum_df,
+            big5_neurotic_sum_df,
+            big5_diligence_sum_df,
+            big5_cooperative_sum_df,
+        ],
+        axis=1,
+    )
     return converted_big5_df
 
 
@@ -127,9 +156,7 @@ def convert_sis(sis_df):
     return converted_sis_df
 
 
-def convert_section(
-    timestamp_df, big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
-):
+def convert_section(big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df):
     converted_big5_df = convert_big5(big5_df)
     converted_aq_df = convert_aq(aq_df)
     converted_perci_df = convert_perci(perci_df)
@@ -139,7 +166,6 @@ def convert_section(
     converted_sis_df = convert_sis(sis_df)
     converted_df = pd.concat(
         [
-            timestamp_df,
             converted_big5_df,
             converted_aq_df,
             converted_perci_df,
@@ -156,10 +182,19 @@ def convert_section(
 def main(before_qa_file, after_qa_file, output_file):
     before_qa_df = pd.read_csv(before_qa_file)
     after_qa_df = pd.read_csv(after_qa_file)
+    interview_df = after_qa_df.iloc[:, 1:5]
+    interview_df.columns = [
+        "Interview_Happy",
+        "Interview_Anxiety",
+        "Interview_Disgust",
+        "Interview_Sad",
+    ]
+
     timestamp_df = before_qa_df.iloc[:, 0]
     # 分析対象の列だけを抜き出す
     before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
+    # TODO: 項目ごとに修正する
     big5_df = before_qa_df.iloc[:, 0:10]
     # AQは50問
     aq_df = before_qa_df.iloc[:, 10:60]
@@ -176,10 +211,10 @@ def main(before_qa_file, after_qa_file, output_file):
     # SISは6問
     sis_df = before_qa_df.iloc[:, 158:164]
     converted_df = convert_section(
-        timestamp_df, big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
+        big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
-    print(converted_df)
-    converted_df.to_csv(output_file, index=False)
+    result_df = pd.concat([timestamp_df, interview_df, converted_df], axis=1)
+    result_df.to_csv(output_file, index=False)
     return
 
 
@@ -190,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_file",
         help="Path to the output file",
-        default="output.xlsx",
+        default="output.csv",
     )
     args = parser.parse_args()
 
