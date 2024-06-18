@@ -19,9 +19,11 @@ def count_negative_words(texts, negative_nouns, negative_verb_adj):
     for text in texts:
         doc = nlp(text)
         for token in doc:
+            # ネガティブな名詞をカウント
             if token.pos_ == "NOUN" and token.lemma_ in negative_nouns:
                 logger.info(f"Negative noun：{token.lemma_}")
                 negative_noun_count += 1
+            # ネガティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"] and token.lemma_ in negative_verb_adj:
                 logger.info(f"Negative vers or adj：{token.lemma_}")
                 negative_verb_count += 1
@@ -33,6 +35,7 @@ def count_negative_words(texts, negative_nouns, negative_verb_adj):
 def get_negative_nouns(nouns_file):
     negative_nouns = []
     nouns_df = pd.read_csv(nouns_file, sep="\t", header=None)
+    # 極性辞書からネガティブな名詞のみを読み取る
     for _, row in nouns_df.iterrows():
         if row[1] == "n":
             negative_nouns.append(str(row[0]).strip())
@@ -42,6 +45,7 @@ def get_negative_nouns(nouns_file):
 def get_negative_verb_adj(verbs_file):
     negative_verbs = []
     verbs_df = pd.read_csv(verbs_file, sep="\t", header=None)
+    # 極性辞書からネガティブな用言のみを読み込む
     for _, row in verbs_df.iterrows():
         if "ネガ" in row[0]:
             negative_verbs.append(str(row[1]).replace(" ", "").strip())
@@ -61,7 +65,7 @@ def analyze_ginza(before_sum_df):
     negative_verb_adj = get_negative_verb_adj("./sentiment_polarity/用言.tsv")
 
     for riko_text_file in riko_text_files:
-        logger.info(f"Counting negative words from {riko_text_file}.")
+        logger.info(f"Counting negative words from {riko_text_file}....")
         riko_texts = pd.read_csv(riko_text_file)
         texts = riko_texts.iloc[:, 2].tolist()
         id = riko_text_file.split("/")[-2]
@@ -84,7 +88,7 @@ def analyze_ginza(before_sum_df):
         ] = negative_noun_count + negative_verb_adj_count
 
     for igaku_text_file in igaku_text_files:
-        logger.info(f"Counting negative words from {igaku_text_file}.")
+        logger.info(f"Counting negative words from {igaku_text_file}....")
         igaku_texts = pd.read_csv(igaku_text_file)
         texts = igaku_texts.iloc[:, 2].tolist()
         id = igaku_text_file.split("/")[-2]

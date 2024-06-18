@@ -40,7 +40,7 @@ def analyze_opensmile(before_sum_df):
     )
 
     for riko_audio_file in riko_audio_files:
-        logger.info(f"Extracting openSMILE features from {riko_audio_file}.")
+        logger.info(f"Extracting openSMILE features from {riko_audio_file}....")
         pitch, loudness, jitter = calculate_features(riko_audio_file)
         id = riko_audio_file.split("/")[-2]
         if int(id) < 10:
@@ -59,7 +59,7 @@ def analyze_opensmile(before_sum_df):
         ] = jitter
 
     for igaku_audio_file in igaku_audio_files:
-        logger.info(f"Extracting openSMILE features from {igaku_audio_file}.")
+        logger.info(f"Extracting openSMILE features from {igaku_audio_file}....")
         pitch, loudness, jitter = calculate_features(igaku_audio_file)
         id = igaku_audio_file.split("/")[-2]
         before_sum_df.loc[
