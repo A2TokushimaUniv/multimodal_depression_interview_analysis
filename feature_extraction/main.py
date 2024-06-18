@@ -1,14 +1,16 @@
 import pandas as pd
-from audio import analyze_opensmile
+from audio import analyze_audio
+from face import analyze_face
+from text import analyze_text
 
 
 def main():
-    before_sum_df = pd.read_csv("../data/preprocessed_data/qa/before_sum.csv")
-    # before_sum_df = analyze_openface(before_sum_df)
-    before_sum_df = analyze_opensmile(before_sum_df)
-    # before_sum_df = analyze_ginza(before_sum_df)
-    before_sum_df.to_csv(
-        "../data/preprocessed_data/qa/before_sum_features.csv", index=False
+    qa_result_df = pd.read_csv("../data/preprocessed_data/qa/qa_result.csv")
+    qa_result_df = analyze_face(qa_result_df)
+    qa_result_df = analyze_audio(qa_result_df)
+    qa_result_df = analyze_text(qa_result_df)
+    qa_result_df.to_csv(
+        "../data/preprocessed_data/qa/qa_result_features.csv", index=False
     )
     return
 

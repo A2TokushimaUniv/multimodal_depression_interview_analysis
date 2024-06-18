@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    file_path = "../data/preprocessed_data/qa/before_sum_features.csv"
+    file_path = "../data/preprocessed_data/qa/qa_result_features.csv"
     df = pd.read_csv(file_path)
 
     # タイムスタンプとLevelとFlagに関する列を削除

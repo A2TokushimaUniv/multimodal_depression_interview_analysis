@@ -4,10 +4,14 @@ import glob
 from logzero import logger
 
 
-def analyze_openface(before_sum_df):
-    csv_file_list = glob.glob(
-        os.path.join("../data/preprocessed_data/face/", "**", "*.csv"), recursive=True
+def analyze_face(qa_result_df):
+    riko_csv_file_list = glob.glob(
+        os.path.join("../data/preprocessed_data/face/riko", "*.csv"), recursive=True
     )
+    igaku_csv_file_list = glob.glob(
+        os.path.join("../data/preprocessed_data/face/igaku", "*.csv"), recursive=True
+    )
+    csv_file_list = riko_csv_file_list + igaku_csv_file_list
     for csv_file in csv_file_list:
         logger.info(f"Extracting OpenFace features from {csv_file}....")
         face_df = pd.read_csv(csv_file)
@@ -23,10 +27,10 @@ def analyze_openface(before_sum_df):
         au_intensity_std_overall = au_intensity_df.stack().std()
         logger.info(f"AU_r_std: {au_intensity_std_overall}")
         timestamp = os.path.splitext(os.path.basename(csv_file))[0]
-        before_sum_df.loc[before_sum_df["タイムスタンプ"] == timestamp, "AUr_Mean"] = (
+        qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUr_Mean"] = (
             au_intensity_mean_overall
         )
-        before_sum_df.loc[before_sum_df["タイムスタンプ"] == timestamp, "AUr_Std"] = (
+        qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUr_Std"] = (
             au_intensity_std_overall
         )
-    return before_sum_df
+    return qa_result_df

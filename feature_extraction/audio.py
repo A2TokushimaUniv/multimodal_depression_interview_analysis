@@ -37,7 +37,7 @@ def get_features(audio_file):
 
 
 def add_results(
-    before_sum_df,
+    qa_result_df,
     target,
     pitch,
     loudness,
@@ -46,28 +46,28 @@ def add_results(
     F0semitone,
     F3frequency,
 ):
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["Pitch"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["Pitch"]
     ] = pitch
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["Loudness"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["Loudness"]
     ] = loudness
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["Jitter"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["Jitter"]
     ] = jitter
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["HNRdBACF"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["HNRdBACF"]
     ] = HNRdBACF_sma3nz
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["F0semitone"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["F0semitone"]
     ] = F0semitone
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["F3frequency"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["F3frequency"]
     ] = F3frequency
-    return before_sum_df
+    return qa_result_df
 
 
-def analyze_opensmile(before_sum_df):
+def analyze_audio(qa_result_df):
     riko_audio_files = glob.glob(
         os.path.join("../data/preprocessed_data/voice/riko", "*", "audioNLP*.wav"),
         recursive=True,
@@ -90,8 +90,8 @@ def analyze_opensmile(before_sum_df):
         else:
             target = f"riko{id}"
 
-        before_sum_df = add_results(
-            before_sum_df,
+        qa_result_df = add_results(
+            qa_result_df,
             target,
             pitch,
             loudness,
@@ -107,8 +107,9 @@ def analyze_opensmile(before_sum_df):
             get_features(igaku_audio_file)
         )
         id = igaku_audio_file.split("/")[-2]
-        before_sum_df = add_results(
-            before_sum_df,
+        target = f"psy_c_{id}"
+        qa_result_df = add_results(
+            qa_result_df,
             target,
             pitch,
             loudness,
@@ -118,4 +119,4 @@ def analyze_opensmile(before_sum_df):
             F3frequency,
         )
 
-    return before_sum_df
+    return qa_result_df

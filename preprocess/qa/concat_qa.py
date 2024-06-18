@@ -6,14 +6,14 @@ import pandas as pd
 
 
 def main():
-    igaku_before_sum_file = "../../data/raw_data/qa/igaku/igaku_before_sum.xlsx"
-    riko_before_sume_file = "../../data/raw_data/qa/riko/riko_before_sum.xlsx"
-    output_file = "../../data/raw_data/qa/before_sum.xlsx"
+    igaku_qa_result_file = "../../data/raw_data/qa/igaku/igaku_qa_result.csv"
+    riko_qa_result_file = "../../data/raw_data/qa/riko/riko_qa_result.csv"
+    output_file = "../../data/preprocessed_data/qa/qa_result.csv"
 
-    igaku_df = pd.read_excel(igaku_before_sum_file, engine="openpyxl")
-    riko_df = pd.read_excel(riko_before_sume_file, engine="openpyxl")
+    igaku_df = pd.read_csv(igaku_qa_result_file)
+    riko_df = pd.read_csv(riko_qa_result_file)
     concat_df = pd.concat([igaku_df, riko_df], axis=0)
-    concat_df.to_excel(output_file, index=False)
+    concat_df.to_csv(output_file, index=False)
 
 
 if __name__ == "__main__":

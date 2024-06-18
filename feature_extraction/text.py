@@ -139,7 +139,7 @@ def get_positive_verb_adj(verbs_file):
 
 
 def add_results(
-    before_sum_df,
+    qa_result_df,
     target,
     negative_noun_count,
     negative_verb_adj_count,
@@ -150,48 +150,48 @@ def add_results(
     percentage_positive_nouns,
     percentage_positive_verb_adj,
 ):
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["NegativeNounCount"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["NegativeNounCount"]
     ] = negative_noun_count
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["NegativeVerbAdjCount"],
     ] = negative_verb_adj_count
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["NegativeWordCount"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["NegativeWordCount"]
     ] = negative_noun_count + negative_verb_adj_count
 
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["PositiveNounCount"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["PositiveNounCount"]
     ] = positive_nouns_count
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["PositiveVerbAdjCount"],
     ] = positive_verb_adj_count
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target, column_names["PositiveWordCount"]
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target, column_names["PositiveWordCount"]
     ] = positive_nouns_count + positive_verb_adj_count
 
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["PercentagePositiveNouns"],
     ] = percentage_positive_nouns
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["PercentagePositiveVerbAdj"],
     ] = percentage_positive_verb_adj
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["PercentageNegativeNouns"],
     ] = percentage_negative_nouns
-    before_sum_df.loc[
-        before_sum_df["タイムスタンプ"] == target,
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
         column_names["PercentageNegativeVerbAdj"],
     ] = percentage_negative_verb_adj
-    return before_sum_df
+    return qa_result_df
 
 
-def analyze_ginza(before_sum_df):
+def analyze_text(qa_result_df):
     riko_text_files = glob.glob(
         os.path.join("../data/preprocessed_data/text/riko", "*", "*.csv"),
         recursive=True,
@@ -229,8 +229,8 @@ def analyze_ginza(before_sum_df):
             percentage_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
 
-        before_sum_df = add_results(
-            before_sum_df,
+        qa_result_df = add_results(
+            qa_result_df,
             target,
             negative_noun_count,
             negative_verb_adj_count,
@@ -261,8 +261,8 @@ def analyze_ginza(before_sum_df):
             percentage_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
 
-        before_sum_df = add_results(
-            before_sum_df,
+        qa_result_df = add_results(
+            qa_result_df,
             target,
             negative_noun_count,
             negative_verb_adj_count,
@@ -273,4 +273,4 @@ def analyze_ginza(before_sum_df):
             percentage_positive_nouns,
             percentage_positive_verb_adj,
         )
-    return before_sum_df
+    return qa_result_df

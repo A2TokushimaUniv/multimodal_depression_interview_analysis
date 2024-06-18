@@ -225,7 +225,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_file",
         help="Path to the output file",
-        default="output.csv",
+        default="qa_result.csv",
     )
     args = parser.parse_args()
 
