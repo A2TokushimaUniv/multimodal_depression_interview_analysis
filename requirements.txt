@@ -10,3 +10,8 @@ pillow
 av
 pandas
 moviepy
+matplotlib
+seaborn
+transformers
+ginza
+ja_ginza_electra
