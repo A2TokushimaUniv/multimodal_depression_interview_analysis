@@ -3,6 +3,7 @@ import os
 from logzero import logger
 import pandas as pd
 import spacy
+from collections import Counter
 
 nlp = spacy.load("ja_ginza")
 
@@ -20,11 +21,18 @@ column_names = {
 }
 
 
+def get_top_frequent_words(counter, top_num=5):
+    return dict(counter.most_common(top_num))
+
+
 def count_negative_words(texts, negative_nouns, negative_verb_adj):
     negative_noun_count = 0
     total_noun_count = 0
     negative_verb_count = 0
     total_verb_adj_count = 0
+    negative_noun_counter = Counter()
+    negative_verb_adj_counter = Counter()
+
     for text in texts:
         doc = nlp(text)
         for token in doc:
@@ -34,12 +42,19 @@ def count_negative_words(texts, negative_nouns, negative_verb_adj):
                 if token.lemma_ in negative_nouns:
                     logger.info(f"Negative noun：{token.lemma_}")
                     negative_noun_count += 1
+                    negative_noun_counter[token.lemma_] += 1
             # ネガティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in negative_verb_adj:
                     logger.info(f"Negative verb or adj：{token.lemma_}")
                     negative_verb_count += 1
+                    negative_verb_adj_counter[token.lemma_] += 1
+
+    top_negative_nouns = get_top_frequent_words(negative_noun_counter)
+    top_negative_verb_adj = get_top_frequent_words(negative_verb_adj_counter)
+    logger.info(f"Top 5 negative nouns: {top_negative_nouns}")
+    logger.info(f"Top 5 negative verbs/adjectives: {top_negative_verb_adj}")
 
     percentage_negative_nouns = (negative_noun_count / total_noun_count) * 100
     percentage_negative_verb_adj = (negative_verb_count / total_verb_adj_count) * 100
@@ -56,6 +71,8 @@ def count_negative_words(texts, negative_nouns, negative_verb_adj):
         negative_verb_count,
         percentage_negative_nouns,
         percentage_negative_verb_adj,
+        top_negative_nouns,
+        top_negative_verb_adj,
     )
 
 
@@ -64,6 +81,9 @@ def count_positive_words(texts, positive_nouns, positive_verb_adj):
     total_noun_count = 0
     positive_verb_count = 0
     total_verb_adj_count = 0
+    positive_noun_counter = Counter()
+    positive_verb_counter = Counter()
+
     for text in texts:
         doc = nlp(text)
         for token in doc:
@@ -73,12 +93,18 @@ def count_positive_words(texts, positive_nouns, positive_verb_adj):
                 if token.lemma_ in positive_nouns:
                     logger.info(f"Positive noun：{token.lemma_}")
                     positive_noun_count += 1
+                    positive_noun_counter[token.lemma_] += 1
             # ポジティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in positive_verb_adj:
                     logger.info(f"Positive verb or adj：{token.lemma_}")
                     positive_verb_count += 1
+                    positive_verb_counter[token.lemma_] += 1
+    top_positive_nouns = get_top_frequent_words(positive_noun_counter)
+    top_positive_verb_adj = get_top_frequent_words(positive_verb_counter)
+    logger.info(f"Top 5 positive nouns: {top_positive_nouns}")
+    logger.info(f"Top 5 positive verbs/adjectives: {top_positive_verb_adj}")
 
     percentage_positive_nouns = (positive_noun_count / total_noun_count) * 100
     percentage_positive_verb_adj = (positive_verb_count / total_verb_adj_count) * 100
@@ -95,6 +121,8 @@ def count_positive_words(texts, positive_nouns, positive_verb_adj):
         positive_verb_count,
         percentage_positive_nouns,
         percentage_positive_verb_adj,
+        top_positive_nouns,
+        top_positive_verb_adj,
     )
 
 
@@ -191,6 +219,11 @@ def add_results(
     return qa_result_df
 
 
+def write_result(file_name, result_dict):
+    with open(file_name, "w") as f:
+        f.writelines("\n".join(str(k) + "," + str(v) for k, v in result_dict.items()))
+
+
 def analyze_text(qa_result_df):
     riko_text_files = glob.glob(
         os.path.join("../data/preprocessed_data/text/riko", "*", "*.csv"),
@@ -207,6 +240,11 @@ def analyze_text(qa_result_df):
     negative_verb_adj = get_negative_verb_adj(verb_adj_file)
     positive_verb_adj = get_positive_verb_adj(verb_adj_file)
 
+    all_negative_noun_counter = Counter()
+    all_negative_verb_adj_counter = Counter()
+    all_positive_noun_counter = Counter()
+    all_positive_verb_adj_counter = Counter()
+
     for riko_text_file in riko_text_files:
         logger.info(f"Counting negative words from {riko_text_file}....")
         riko_texts = pd.read_csv(riko_text_file)
@@ -221,13 +259,21 @@ def analyze_text(qa_result_df):
             negative_verb_adj_count,
             percentage_negative_nouns,
             percentage_negative_verb_adj,
+            top_negative_nouns,
+            top_negative_verb_adj,
         ) = count_negative_words(texts, negative_nouns, negative_verb_adj)
+        all_negative_noun_counter.update(top_negative_nouns)
+        all_negative_verb_adj_counter.update(top_negative_verb_adj)
         (
             positive_nouns_count,
             positive_verb_adj_count,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
+            top_positive_nouns,
+            top_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
+        all_positive_noun_counter.update(top_positive_nouns)
+        all_positive_verb_adj_counter.update(top_positive_verb_adj)
 
         qa_result_df = add_results(
             qa_result_df,
@@ -253,13 +299,22 @@ def analyze_text(qa_result_df):
             negative_verb_adj_count,
             percentage_negative_nouns,
             percentage_negative_verb_adj,
+            top_negative_nouns,
+            top_negative_verb_adj,
         ) = count_negative_words(texts, negative_nouns, negative_verb_adj)
+        all_negative_noun_counter.update(top_negative_nouns)
+        all_negative_verb_adj_counter.update(top_negative_verb_adj)
+
         (
             positive_nouns_count,
             positive_verb_adj_count,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
+            top_positive_nouns,
+            top_positive_verb_adj,
         ) = count_positive_words(texts, positive_nouns, positive_verb_adj)
+        all_positive_noun_counter.update(top_positive_nouns)
+        all_positive_verb_adj_counter.update(top_positive_verb_adj)
 
         qa_result_df = add_results(
             qa_result_df,
@@ -273,4 +328,30 @@ def analyze_text(qa_result_df):
             percentage_positive_nouns,
             percentage_positive_verb_adj,
         )
+
+    os.makedirs("text_analysis", exist_ok=True)
+    all_top_negative_nouns = get_top_frequent_words(all_negative_noun_counter, 100)
+    logger.info(f"All top negative nouns: {all_top_negative_nouns}")
+    write_result("text_analysis/all_top_negative_nouns.csv", all_top_negative_nouns)
+
+    all_top_negative_verb_adj = get_top_frequent_words(
+        all_negative_verb_adj_counter, 100
+    )
+    logger.info(f"All top negative verb adjectives: {all_top_negative_verb_adj}")
+    write_result(
+        "text_analysis/all_top_negative_verb_adj.csv", all_top_negative_verb_adj
+    )
+
+    all_top_positive_nouns = get_top_frequent_words(all_positive_noun_counter, 100)
+    logger.info(f"All top positive nouns: {all_top_positive_nouns}")
+    write_result("text_analysis/all_top_positive_nouns.csv", all_top_positive_nouns)
+
+    all_top_positive_verb_adj = get_top_frequent_words(
+        all_positive_verb_adj_counter, 100
+    )
+    logger.info(f"All top positive verb adjectives: {all_top_positive_verb_adj}")
+    write_result(
+        "text_analysis/all_top_positive_verb_adj.csv", all_top_positive_verb_adj
+    )
+
     return qa_result_df
