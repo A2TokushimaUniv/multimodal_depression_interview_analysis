@@ -19,6 +19,7 @@ def analyze_face(qa_result_df):
             col for col in face_df.columns if "_r" in col and "AU" in col
         ]
         au_intensity_df = face_df[au_intensity_columns]
+        # TODO: AUごとの平均値と標準偏差も追加する
         au_intensity_mean = au_intensity_df.mean()
         # AU全体の平均を計算
         au_intensity_mean_overall = au_intensity_mean.mean()
