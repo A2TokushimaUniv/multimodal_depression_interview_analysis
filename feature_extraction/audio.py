@@ -26,40 +26,40 @@ column_names = {
 
 def get_pitch_features(features):
     pitch_mean = features["F0semitoneFrom27.5Hz_sma3nz_amean"].iloc[-1]
-    logger.info(f"pitch_mean: {pitch_mean}")
+    logger.info(f"PitchMean: {pitch_mean}")
     pitch_stddev = features["F0semitoneFrom27.5Hz_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"pitch_stddev: {pitch_stddev}")
+    logger.info(f"PitchStddev: {pitch_stddev}")
     return pitch_mean, pitch_stddev
 
 
 def get_loudness_features(features):
     loudness_mean = features["loudness_sma3_amean"].iloc[-1]
-    logger.info(f"loudness_mean: {loudness_mean}")
+    logger.info(f"LoudnessMean: {loudness_mean}")
     loudness_stddev = features["loudness_sma3_stddevNorm"].iloc[-1]
-    logger.info(f"loudness_stddev: {loudness_stddev}")
+    logger.info(f"LoudnessStddev: {loudness_stddev}")
     return loudness_mean, loudness_stddev
 
 
 def get_jitter_features(features):
     jitter_mean = features["jitterLocal_sma3nz_amean"].iloc[-1]
-    logger.info(f"jitter_mean: {jitter_mean}")
+    logger.info(f"JitterMean: {jitter_mean}")
     jitter_stddev = features["jitterLocal_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"jitter_stddev: {jitter_stddev}")
+    logger.info(f"JitterStddev: {jitter_stddev}")
     return jitter_mean, jitter_stddev
 
 
 def get_shimmer_features(features):
-    shimmer_mean = features["shimmerLocal_sma3nz_amean"].iloc[-1]
-    logger.info(f"shimmer_mean: {shimmer_mean}")
-    shimmer_stddev = features["shimmerLocal_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"shimmer_stddev: {shimmer_stddev}")
+    shimmer_mean = features["shimmerLocaldB_sma3nz_amean"].iloc[-1]
+    logger.info(f"ShimmerMean: {shimmer_mean}")
+    shimmer_stddev = features["shimmerLocaldB_sma3nz_stddevNorm"].iloc[-1]
+    logger.info(f"ShimmerStddev: {shimmer_stddev}")
     return shimmer_mean, shimmer_stddev
 
 
 def get_other_features(features):
-    HNRdBACF_sma3nz = features["HNRdBACF_sma3nz"].iloc[-1]
+    HNRdBACF_sma3nz = features["HNRdBACF_sma3nz_amean"].iloc[-1]
     logger.info(f"HNRdBACF_sma3nz: {HNRdBACF_sma3nz}")
-    F0semitone = features["F0semitoneFrom27.5Hz_sma3nz"].iloc[-1]
+    F0semitone = features["F0semitoneFrom27.5Hz_sma3nz_pctlrange0-2"].iloc[-1]
     logger.info(f"F0semitone: {F0semitone}")
     F3frequency = features["F3frequency_sma3nz_stddevNorm"].iloc[-1]
     logger.info(f"F3frequency: {F3frequency}")

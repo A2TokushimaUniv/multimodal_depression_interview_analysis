@@ -4,7 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from logzero import logger
 
-questionnaire_columns = {
+questionnaire_columns = (
     "Interview_Happy",
     "Interview_Anxiety",
     "Interview_Disgust",
@@ -20,14 +20,26 @@ questionnaire_columns = {
     "LSAS",
     "PHQ9",
     "SIS",
-}
+)
 
-multimodal_feature_columns = {
-    "AUr_Mean",
-    "AUr_Std",
-    "Pitch",
-    "Loudness",
-    "Jitter",
+openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
+au_columns = [
+    f"AU{'0' if au < 10 else ''}{au}_r_{stat}".strip
+    for au in openface_au_list
+    for stat in ["Mean", "Stddev"]
+]
+print(au_columns)
+feature_columns = [
+    "AUall_r_Mean",
+    "AUall_r_Stddev",
+    "PitchMean",
+    "PitchStddev",
+    "LoudnessMean",
+    "LoudnessStddev",
+    "JitterMean",
+    "JitterStddev",
+    "ShimmerMean",
+    "ShimmerStddev",
     "HNRdBACF",
     "F0semitone",
     "F3frequency",
@@ -41,7 +53,8 @@ multimodal_feature_columns = {
     "Per_Pos_VerbAdj",
     "Per_Neg_Noun",
     "Per_Neg_VerbAdj",
-}
+]
+multimodal_feature_columns = set(au_columns + feature_columns)
 
 
 def main(input_file, threshold):
@@ -70,6 +83,7 @@ def main(input_file, threshold):
     ]
     significant_pairs = significant_pairs.drop_duplicates()
     # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
+    # TODO: うまくいってない
     significant_pairs = significant_pairs[
         ~(
             (
@@ -94,7 +108,7 @@ def main(input_file, threshold):
 
     # ヒートマップ
     logger.info("Plotting heatmap...")
-    plt.figure(figsize=(20, 15))
+    plt.figure(figsize=(50, 30))
     sns.heatmap(
         correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1, center=0
     )
