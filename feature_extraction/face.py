@@ -19,19 +19,31 @@ def analyze_face(qa_result_df):
             col for col in face_df.columns if "_r" in col and "AU" in col
         ]
         au_intensity_df = face_df[au_intensity_columns]
-        # TODO: AUごとの平均値と標準偏差も追加する
+        # AUごとの平均値と標準偏差を計算
         au_intensity_mean = au_intensity_df.mean()
+        au_intensity_std = au_intensity_df.std()
         # AU全体の平均を計算
         au_intensity_mean_overall = au_intensity_mean.mean()
         logger.info(f"AU_r_mean: {au_intensity_mean_overall}")
         # AU全体の標準偏差を計算
         au_intensity_std_overall = au_intensity_df.stack().std()
         logger.info(f"AU_r_std: {au_intensity_std_overall}")
+
         timestamp = os.path.splitext(os.path.basename(csv_file))[0]
-        qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUr_Mean"] = (
-            au_intensity_mean_overall
-        )
-        qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUr_Std"] = (
+        qa_result_df.loc[
+            qa_result_df["タイムスタンプ"] == timestamp, "AUall_r_Mean"
+        ] = au_intensity_mean_overall
+        qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUall_r_Std"] = (
             au_intensity_std_overall
         )
+        for au in au_intensity_columns:
+            qa_result_df.loc[
+                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_mean"
+            ] = au_intensity_mean[au]
+            logger.info(f"{au}_mean: {au_intensity_mean[au]}")
+            qa_result_df.loc[
+                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_std"
+            ] = au_intensity_std[au]
+            logger.info(f"{au}_std: {au_intensity_std[au]}")
+
     return qa_result_df
