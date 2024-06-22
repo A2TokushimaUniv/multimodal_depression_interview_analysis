@@ -14,8 +14,6 @@ def main(input_file, output_file, no_text, no_face, no_audio):
         qa_result_df = analyze_face(qa_result_df)
     if not no_audio:
         qa_result_df = analyze_audio(qa_result_df)
-    qa_result_df = analyze_face(qa_result_df) if not no_face else qa_result_df
-    qa_result_df = analyze_audio(qa_result_df) if not no_audio else qa_result_df
     qa_result_df.to_csv(output_file, index=False)
     return
 

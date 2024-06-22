@@ -37,7 +37,7 @@ def get_significant_pairs(correlation_matrix):
 
     openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
     au_columns = [
-        f"AU{'0' if au < 10 else ''}{au}_r_{stat}"
+        f"AU{'0' if au < 10 else ''}{au}_r_{stat}".strip()
         for au in openface_au_list
         for stat in ["Mean", "Stddev"]
     ]

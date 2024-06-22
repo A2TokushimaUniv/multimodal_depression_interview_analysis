@@ -38,11 +38,11 @@ def analyze_face(qa_result_df):
         ] = au_intensity_std_overall
         for au in au_intensity_columns:
             qa_result_df.loc[
-                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Mean"
+                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Mean".strip()
             ] = au_intensity_mean[au]
             logger.info(f"{au}_Mean: {au_intensity_mean[au]}")
             qa_result_df.loc[
-                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Stddev"
+                qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Stddev".strip()
             ] = au_intensity_std[au]
             logger.info(f"{au}_Stddev: {au_intensity_std[au]}")
 
