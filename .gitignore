@@ -745,10 +745,4 @@ ipython_config.py
 
 data/
 output/
-other/elan_output
-other/tmp.wav
 *.out
-analysis/*.csv
-analysis/*.png
-preprocess/processed
-feature_extraction/text_analysis

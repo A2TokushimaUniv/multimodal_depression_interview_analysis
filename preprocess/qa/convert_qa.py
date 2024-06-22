@@ -4,7 +4,6 @@
 """
 
 import pandas as pd
-import argparse
 from logzero import logger
 
 
@@ -43,35 +42,39 @@ def convert_big5(big5_df):
         big5_extrovert_df.iloc[:, 0], big5_extrovert_df.iloc[:, 1], "BIG5_Extrovert"
     )
 
-    big5_cooperative_df = big5_df.iloc[:, [1, 6]]
-    big5_cooperative_sum_df = big5_mapping_sum(
-        big5_cooperative_df.iloc[:, 1],
-        big5_cooperative_df.iloc[:, 0],
-        "BIG5_Cooperative",
+    big5_agreeableness_df = big5_df.iloc[:, [1, 6]]
+    big5_agreeableness_sum_df = big5_mapping_sum(
+        big5_agreeableness_df.iloc[:, 1],
+        big5_agreeableness_df.iloc[:, 0],
+        "BIG5_Agreeableness",
     )
 
-    big5_diligence_df = big5_df.iloc[:, [2, 7]]
-    big5_diligence_sum_df = big5_mapping_sum(
-        big5_diligence_df.iloc[:, 0], big5_diligence_df.iloc[:, 1], "BIG5_Diligence"
+    big5_conscientiousness_df = big5_df.iloc[:, [2, 7]]
+    big5_conscientiousness_sum_df = big5_mapping_sum(
+        big5_conscientiousness_df.iloc[:, 0],
+        big5_conscientiousness_df.iloc[:, 1],
+        "BIG5_Conscientiousness",
     )
 
-    big5_neurotic_df = big5_df.iloc[:, [3, 8]]
-    big5_neurotic_sum_df = big5_mapping_sum(
-        big5_neurotic_df.iloc[:, 0], big5_neurotic_df.iloc[:, 1], "BIG5_Neurotic"
+    big5_neuroticism_df = big5_df.iloc[:, [3, 8]]
+    big5_neuroticism_sum_df = big5_mapping_sum(
+        big5_neuroticism_df.iloc[:, 0],
+        big5_neuroticism_df.iloc[:, 1],
+        "BIG5_Neuroticism",
     )
 
-    big5_open_df = big5_df.iloc[:, [4, 9]]
-    big5_open_sum_df = big5_mapping_sum(
-        big5_open_df.iloc[:, 0], big5_open_df.iloc[:, 1], "BIG5_Open"
+    big5_openness_df = big5_df.iloc[:, [4, 9]]
+    big5_openness_sum_df = big5_mapping_sum(
+        big5_openness_df.iloc[:, 0], big5_openness_df.iloc[:, 1], "BIG5_Openness"
     )
 
     converted_big5_df = pd.concat(
         [
             big5_extrovert_sum_df,
-            big5_open_sum_df,
-            big5_neurotic_sum_df,
-            big5_diligence_sum_df,
-            big5_cooperative_sum_df,
+            big5_openness_sum_df,
+            big5_neuroticism_sum_df,
+            big5_conscientiousness_sum_df,
+            big5_agreeableness_sum_df,
         ],
         axis=1,
     )
@@ -213,7 +216,6 @@ def main(before_qa_file, after_qa_file, output_file):
     # 分析対象の列だけを抜き出す
     before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
-    # TODO: 項目ごとに修正する
     big5_df = before_qa_df.iloc[:, 0:10]
     # AQは50問
     aq_df = before_qa_df.iloc[:, 10:60]
@@ -238,20 +240,18 @@ def main(before_qa_file, after_qa_file, output_file):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("input_before_qa", help="Path to the Before QA file")
-    parser.add_argument("input_after_qa", help="Path to the After QA file")
-    parser.add_argument(
-        "--output_file",
-        help="Path to the output file",
-        default="qa_result.csv",
-    )
-    args = parser.parse_args()
+    riko_before_qa_file = "../data/raw_data/qa/riko/riko_before_clean.csv"
+    riko_after_qa_file = "../data/raw_data/qa/riko/riko_after.csv"
+    riko_output_file = "../data/preprocessed_data/qa/riko_qa_result.csv"
+    logger.info("Input Before QA file: {}".format(riko_before_qa_file))
+    logger.info("input After QA file: {}".format(riko_after_qa_file))
+    logger.info("Output file: {}".format(riko_output_file))
+    main(riko_before_qa_file, riko_after_qa_file, riko_output_file)
 
-    before_qa_file = args.input_before_qa
-    after_qa_file = args.input_after_qa
-    output_file = args.output_file
-    logger.info("Input Before QA file: {}".format(before_qa_file))
-    logger.info("input After QA file: {}".format(after_qa_file))
-    logger.info("Output file: {}".format(output_file))
-    main(before_qa_file, after_qa_file, output_file)
+    igaku_before_qa_file = "../data/raw_data/qa/igaku/igaku_before.csv"
+    igaku_after_qa_file = "../data/raw_data/qa/igaku/igaku_after.csv"
+    igaku_output_file = "../data/preprocessed_data/qa/igaku_qa_result.csv"
+    logger.info("Input Before QA file: {}".format(igaku_before_qa_file))
+    logger.info("input After QA file: {}".format(igaku_after_qa_file))
+    logger.info("Output file: {}".format(igaku_output_file))
+    main(igaku_before_qa_file, igaku_after_qa_file, igaku_output_file)

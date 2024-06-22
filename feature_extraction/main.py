@@ -1,35 +1,43 @@
 import pandas as pd
-from audio import analyze_audio
-from face import analyze_face
+
+from audio_opensmile import analyze_audio_opensmile
+from audio_wav2vec2 import analyze_audio_wav2vec2
+from video_openface import analyze_openface_stats
+
 from text import analyze_text
 import argparse
 from logzero import logger
 
 
-def main(input_file, output_file, no_text, no_face, no_audio):
-    qa_result_df = pd.read_csv(input_file)
+def main(input_qa_file, input_data_dir, output_qa_file, no_text, no_face, no_audio):
+    qa_result_df = pd.read_csv(input_qa_file)
     if not no_text:
-        qa_result_df = analyze_text(qa_result_df)
+        qa_result_df = analyze_text(qa_result_df, input_data_dir)
     if not no_face:
-        qa_result_df = analyze_face(qa_result_df)
+        qa_result_df = analyze_openface_stats(qa_result_df, input_data_dir)
     if not no_audio:
-        qa_result_df = analyze_audio(qa_result_df)
-    qa_result_df = analyze_face(qa_result_df) if not no_face else qa_result_df
-    qa_result_df = analyze_audio(qa_result_df) if not no_audio else qa_result_df
-    qa_result_df.to_csv(output_file, index=False)
+        qa_result_df = analyze_audio_opensmile(qa_result_df, input_data_dir)
+        analyze_audio_wav2vec2(input_data_dir)
+    qa_result_df.to_csv(output_qa_file, index=False)
     return
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_file",
+        "--input_qa_file",
         default="../data/preprocessed_data/qa/qa_result.csv",
         type=str,
         help="Path to the input file",
     )
     parser.add_argument(
-        "--output_file",
+        "--input_data_dir",
+        default="../data/preprocessed_data",
+        type=str,
+        help="Path to the input data directory",
+    )
+    parser.add_argument(
+        "--output_qa_file",
         default="../data/preprocessed_data/qa/qa_result_features.csv",
         type=str,
         help="Path to the output file",
@@ -53,11 +61,12 @@ if __name__ == "__main__":
         help="Disable audio features extraction",
     )
     args = parser.parse_args()
-    input_file = args.input_file
-    output_file = args.output_file
+    input_qa_file = args.input_qa_file
+    input_data_dir = args.input_data_dir
+    output_qa_file = args.output_qa_file
     no_text = args.no_text
     no_face = args.no_face
     no_audio = args.no_audio
-    logger.info(f"Input_file: {input_file}")
-    logger.info(f"Output_file: {output_file}")
-    main(input_file, output_file, no_text, no_face, no_audio)
+    logger.info(f"Input_file: {input_qa_file}")
+    logger.info(f"Output_file: {output_qa_file}")
+    main(input_qa_file, input_data_dir, output_qa_file, no_text, no_face, no_audio)
