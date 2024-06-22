@@ -5,6 +5,10 @@
 
 `python main.py --input_file=qa_file_path --output_file=qa_result_file_path`
 
+`--no_text`, `--no_face`, `--no_audio`を付けることで、必要ないモダリティの特徴量抽出をしないようにもできます。
+
+例えば、言語データの特徴量抽出のみを行いたい場合、`python main.py --input_file=qa_file_path --output_file=qa_result_file_path --no_face --no_audio`とすることで、言語特徴量のみを抽出します。
+
 ### 実行結果
 アンケートの集計結果（`input_file`）にマルチモーダル特徴量に関する列を追加したCSVファイル（`output_file`）が生成されます。
 

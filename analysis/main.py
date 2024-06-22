@@ -4,75 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from logzero import logger
 
-questionnaire_columns = (
-    "Interview_Happy",
-    "Interview_Anxiety",
-    "Interview_Disgust",
-    "Interview_Sad",
-    "BIG5_Extrovert",
-    "BIG5_Open",
-    "BIG5_Neurotic",
-    "BIG5_Diligence",
-    "BIG5_Cooperative",
-    "AQ",
-    "PERCI",
-    "GAD7",
-    "LSAS",
-    "PHQ9",
-    "SIS",
-)
 
-openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
-au_columns = [
-    f"AU{'0' if au < 10 else ''}{au}_r_{stat}".strip
-    for au in openface_au_list
-    for stat in ["Mean", "Stddev"]
-]
-print(au_columns)
-feature_columns = [
-    "AUall_r_Mean",
-    "AUall_r_Stddev",
-    "PitchMean",
-    "PitchStddev",
-    "LoudnessMean",
-    "LoudnessStddev",
-    "JitterMean",
-    "JitterStddev",
-    "ShimmerMean",
-    "ShimmerStddev",
-    "HNRdBACF",
-    "F0semitone",
-    "F3frequency",
-    "Neg_Noun_Count",
-    "Neg_VerbAdj_Count",
-    "Neg_Word_Count",
-    "Pos_Noun_Count",
-    "Pos_VerbAdj_Count",
-    "Pos_Word_Count",
-    "Per_Pos_Noun",
-    "Per_Pos_VerbAdj",
-    "Per_Neg_Noun",
-    "Per_Neg_VerbAdj",
-]
-multimodal_feature_columns = set(au_columns + feature_columns)
-
-
-def main(input_file, threshold):
-    df = pd.read_csv(input_file)
-
-    logger.info("Calculating correlation matrix...")
-    # タイムスタンプとLevelとFlagに関する列を削除
-    columns_to_exclude = [
-        col
-        for col in df.columns
-        if "Level" in col or "Flag" in col or "タイムスタンプ" == col
-    ]
-    df = df.drop(columns=columns_to_exclude)
-
-    # 相関係数
-    correlation_matrix = df.corr()
-    correlation_matrix.to_csv("correlation_matrix.csv")
-
+def get_significant_pairs(correlation_matrix):
     # 絶対値が閾値以上のペアを見つける
     corr_pairs = correlation_matrix.unstack()
     significant_pairs = corr_pairs[abs(corr_pairs) >= threshold]
@@ -82,8 +15,59 @@ def main(input_file, threshold):
         != significant_pairs.index.get_level_values(1)
     ]
     significant_pairs = significant_pairs.drop_duplicates()
+
     # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
-    # TODO: うまくいってない
+    questionnaire_columns = (
+        "Interview_Happy",
+        "Interview_Anxiety",
+        "Interview_Disgust",
+        "Interview_Sad",
+        "BIG5_Extrovert",
+        "BIG5_Open",
+        "BIG5_Neurotic",
+        "BIG5_Diligence",
+        "BIG5_Cooperative",
+        "AQ",
+        "PERCI",
+        "GAD7",
+        "LSAS",
+        "PHQ9",
+        "SIS",
+    )
+
+    openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
+    au_columns = [
+        f"AU{'0' if au < 10 else ''}{au}_r_{stat}"
+        for au in openface_au_list
+        for stat in ["Mean", "Stddev"]
+    ]
+    feature_columns = [
+        "AUall_r_Mean",
+        "AUall_r_Stddev",
+        "PitchMean",
+        "PitchStddev",
+        "LoudnessMean",
+        "LoudnessStddev",
+        "JitterMean",
+        "JitterStddev",
+        "ShimmerMean",
+        "ShimmerStddev",
+        "HNRdBACF",
+        "F0semitone",
+        "F3frequency",
+        "Neg_Noun_Count",
+        "Neg_VerbAdj_Count",
+        "Neg_Word_Count",
+        "Pos_Noun_Count",
+        "Pos_VerbAdj_Count",
+        "Pos_Word_Count",
+        "Per_Pos_Noun",
+        "Per_Pos_VerbAdj",
+        "Per_Neg_Noun",
+        "Per_Neg_VerbAdj",
+    ]
+
+    multimodal_feature_columns = set(au_columns + feature_columns)
     significant_pairs = significant_pairs[
         ~(
             (
@@ -106,7 +90,8 @@ def main(input_file, threshold):
     file_suffix = str(threshold).replace(".", "")
     significant_pairs.to_csv(f"significant_pairs_{file_suffix}.csv")
 
-    # ヒートマップ
+
+def get_heatmap(correlation_matrix):
     logger.info("Plotting heatmap...")
     plt.figure(figsize=(50, 30))
     sns.heatmap(
@@ -114,6 +99,23 @@ def main(input_file, threshold):
     )
     plt.title("Correlation Matrix Heatmap")
     plt.savefig("correlation_matrix_heatmap.png")
+
+
+def main(input_file, threshold):
+    df = pd.read_csv(input_file)
+
+    logger.info("Calculating correlation matrix...")
+    # タイムスタンプとLevelとFlagに関する列を削除
+    columns_to_exclude = [
+        col
+        for col in df.columns
+        if "Level" in col or "Flag" in col or "タイムスタンプ" == col
+    ]
+    df = df.drop(columns=columns_to_exclude)
+    correlation_matrix = df.corr()
+    correlation_matrix.to_csv("correlation_matrix.csv")
+    get_significant_pairs(correlation_matrix)
+    get_heatmap(correlation_matrix)
 
 
 if __name__ == "__main__":
