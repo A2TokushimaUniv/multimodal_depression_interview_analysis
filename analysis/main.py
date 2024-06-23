@@ -101,6 +101,16 @@ def get_heatmap(correlation_matrix):
     plt.savefig("correlation_matrix_heatmap.png")
 
 
+def calculate_statistics(df):
+    means = df.mean()
+    stds = df.std()
+
+    results = pd.DataFrame({"Mean": means, "Standard Deviation": stds})
+
+    output_csv_file_path = "column_statistics.csv"
+    results.to_csv(output_csv_file_path, index=True)
+
+
 def main(input_file, threshold):
     df = pd.read_csv(input_file)
 
@@ -112,6 +122,7 @@ def main(input_file, threshold):
         if "Level" in col or "Flag" in col or "タイムスタンプ" == col
     ]
     df = df.drop(columns=columns_to_exclude)
+    calculate_statistics(df)
     correlation_matrix = df.corr()
     correlation_matrix.to_csv("correlation_matrix.csv")
     get_significant_pairs(correlation_matrix)
