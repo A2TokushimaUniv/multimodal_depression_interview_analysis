@@ -10,19 +10,6 @@ def load_env():
     load_dotenv(dotenv_path)
 
 
-def remove_tmp_file(tmp_file):
-    try:
-        os.remove(tmp_file)
-    except OSError as e:
-        logger.error(f"Failed to remove file: {e}")
-
-
-def make_dir(dir_name):
-    # TODO: TemporaryDirectoryで書き換える
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-
-
 def make_processed_data_dir(output_dir, dir_num):
     for modal in ["text", "voice", "video"]:
         for faculty in ["igaku", "riko"]:
