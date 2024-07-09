@@ -18,11 +18,22 @@ column_names = {
     "PercentagePositiveNouns": "Per_Pos_Noun",
     "PercentageNegativeVerbAdj": "Per_Neg_VerbAdj",
     "PercentagePositiveVerbAdj": "Per_Pos_VerbAdj",
+    "SpeechRate": "SpeechRate",
 }
 
 
 def get_top_frequent_words(counter, top_num=5):
     return dict(counter.most_common(top_num))
+
+
+def calculate_speech_rate(texts, start_seconds, end_seconds):
+    char_counts = [len(text) for text in texts]
+    durations = [end - start for start, end in zip(start_seconds, end_seconds)]
+    char_per_second = [
+        char_count / duration for char_count, duration in zip(char_counts, durations)
+    ]
+    average_char_per_second = sum(char_per_second) / len(char_per_second)
+    return average_char_per_second * 60
 
 
 def count_negative_words(texts, negative_nouns, negative_verb_adj):
@@ -177,6 +188,7 @@ def add_results(
     percentage_negative_verb_adj,
     percentage_positive_nouns,
     percentage_positive_verb_adj,
+    speech_rate,
 ):
     qa_result_df.loc[
         qa_result_df["タイムスタンプ"] == target, column_names["NegativeNounCount"]
@@ -216,6 +228,10 @@ def add_results(
         qa_result_df["タイムスタンプ"] == target,
         column_names["PercentageNegativeVerbAdj"],
     ] = percentage_negative_verb_adj
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
+        column_names["SpeechRate"],
+    ] = speech_rate
     return qa_result_df
 
 
@@ -248,7 +264,11 @@ def analyze_text(qa_result_df):
     for riko_text_file in riko_text_files:
         logger.info(f"Counting negative words from {riko_text_file}....")
         riko_texts = pd.read_csv(riko_text_file)
-        texts = riko_texts.iloc[:, 2].tolist()
+        texts = riko_texts["text"].tolist()
+        start_seconds = riko_texts["start_seconds"].tolist()
+        end_seconds = riko_texts["end_seconds"].tolist()
+        speech_rate = calculate_speech_rate(texts, start_seconds, end_seconds)
+
         id = riko_text_file.split("/")[-2]
         if int(id) < 10:
             target = f"riko0{id}"
@@ -286,12 +306,17 @@ def analyze_text(qa_result_df):
             percentage_negative_verb_adj,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
+            speech_rate,
         )
 
     for igaku_text_file in igaku_text_files:
         logger.info(f"Counting negative words from {igaku_text_file}....")
         igaku_texts = pd.read_csv(igaku_text_file)
-        texts = igaku_texts.iloc[:, 2].tolist()
+        texts = igaku_texts["text"].tolist()
+        start_seconds = igaku_texts["start_seconds"].tolist()
+        end_seconds = igaku_texts["end_seconds"].tolist()
+        speech_rate = calculate_speech_rate(texts, start_seconds, end_seconds)
+
         id = igaku_text_file.split("/")[-2]
         target = f"psy_c_{id}"
         (
@@ -327,6 +352,7 @@ def analyze_text(qa_result_df):
             percentage_negative_verb_adj,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
+            speech_rate,
         )
 
     os.makedirs("text_analysis", exist_ok=True)

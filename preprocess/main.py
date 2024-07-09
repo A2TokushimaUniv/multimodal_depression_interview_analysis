@@ -77,6 +77,7 @@ def get_subject_audio_text(
     logger.info(f"Successfully get subject audio at {audio_output_file}!")
     with open(text_output_file, mode="w", encoding="utf-8") as f:
         writer = csv.writer(f)
+        writer.writerow(["start_seconds", "end_seconds", "text"])
         writer.writerows(subject_text_list)
     logger.info(f"Successfully get subject text at {text_output_file}!")
     return
@@ -142,8 +143,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_video", help="Path to input video file", required=True)
     parser.add_argument("--input_audio", help="Path to input audio file", required=True)
-    # Use this when generate elan annotation text
-    parser.add_argument("--text_only", default=False, help="Generate only text data")
 
     parser.add_argument(
         "--output_dir",
@@ -164,7 +163,6 @@ if __name__ == "__main__":
     output_dir = args.output_dir
     faculty = args.faculty
     dir_num = args.dir_num
-    text_only = args.text_only
 
     logger.info(f"Input video: {video_file}")
     logger.info(f"Input audio: {audio_file}")

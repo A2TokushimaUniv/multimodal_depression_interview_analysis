@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from logzero import logger
 
 
-def get_significant_pairs(correlation_matrix):
+def get_significant_pairs(correlation_matrix, threshold):
     # 絶対値が閾値以上のペアを見つける
     corr_pairs = correlation_matrix.unstack()
     significant_pairs = corr_pairs[abs(corr_pairs) >= threshold]
@@ -125,7 +125,7 @@ def main(input_file, threshold):
     calculate_statistics(df)
     correlation_matrix = df.corr()
     correlation_matrix.to_csv("correlation_matrix.csv")
-    get_significant_pairs(correlation_matrix)
+    get_significant_pairs(correlation_matrix, threshold)
     get_heatmap(correlation_matrix)
 
 
