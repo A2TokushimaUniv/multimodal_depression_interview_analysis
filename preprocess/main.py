@@ -1,17 +1,17 @@
 from pydub.silence import detect_nonsilent
-from utils import load_dotenv, make_processed_data_dir
+from utils import make_processed_data_dir
 import os
-from openai import OpenAI
 from pydub import AudioSegment
 import pickle
 from logzero import logger
 import argparse
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
+from reazonspeech.nemo.asr import load_model, transcribe, audio_from_path
 
-load_dotenv()
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+# ReazonSpeech model
+# See: https://huggingface.co/reazon-research/reazonspeech-nemo-v2
+REAZON_MODEL = load_model(device="cuda")
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
@@ -38,13 +38,9 @@ def get_subject_segments(
 
 
 def get_subject_text_list(audio_file, start, end):
-    transcription = client.audio.transcriptions.create(
-        model="whisper-1",
-        file=open(audio_file, "rb"),
-        language="ja",
-        timeout=300,
-    )
-    text = transcription.text
+    audio = audio_from_path(audio_file)
+    result = transcribe(REAZON_MODEL, audio)
+    text = result.text
     if len(text) > 1:  # 2文字以上の発話のみ書き込む
         return [start / 1000, end / 1000, text]  # ミリ秒を秒に直してからCSVに書き込む
     return None
