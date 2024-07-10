@@ -18,7 +18,8 @@ column_names = {
     "PercentagePositiveNouns": "Per_Pos_Noun",
     "PercentageNegativeVerbAdj": "Per_Neg_VerbAdj",
     "PercentagePositiveVerbAdj": "Per_Pos_VerbAdj",
-    "SpeechRate": "SpeechRate",
+    "CharPerMinutes": "CharPerMinutes",
+    "WordPerMinutes": "WordPerMinutes",
 }
 
 
@@ -27,13 +28,23 @@ def get_top_frequent_words(counter, top_num=5):
 
 
 def calculate_speech_rate(texts, start_seconds, end_seconds):
+    assert len(texts) == len(start_seconds) == len(end_seconds)
     char_counts = [len(text) for text in texts]
+    word_counts = []
+    for text in texts:
+        doc = nlp(text)
+        words = [token.text for token in doc if token.pos_ != "SPACE"]
+        word_counts.append(len(words))
     durations = [end - start for start, end in zip(start_seconds, end_seconds)]
     char_per_second = [
         char_count / duration for char_count, duration in zip(char_counts, durations)
     ]
-    average_char_per_second = sum(char_per_second) / len(char_per_second)
-    return average_char_per_second * 60
+    average_char_per_minutes = (sum(char_per_second) / len(char_per_second)) * 60
+    word_per_second = [
+        word_count / duration for word_count, duration in zip(word_counts, durations)
+    ]
+    average_word_per_minutes = (sum(word_per_second) / len(word_per_second)) * 60
+    return average_char_per_minutes, average_word_per_minutes
 
 
 def count_negative_words(texts, negative_nouns, negative_verb_adj):
@@ -188,7 +199,8 @@ def add_results(
     percentage_negative_verb_adj,
     percentage_positive_nouns,
     percentage_positive_verb_adj,
-    speech_rate,
+    char_per_minutes,
+    word_per_minutes,
 ):
     qa_result_df.loc[
         qa_result_df["タイムスタンプ"] == target, column_names["NegativeNounCount"]
@@ -230,8 +242,12 @@ def add_results(
     ] = percentage_negative_verb_adj
     qa_result_df.loc[
         qa_result_df["タイムスタンプ"] == target,
-        column_names["SpeechRate"],
-    ] = speech_rate
+        column_names["CharPerMinutes"],
+    ] = char_per_minutes
+    qa_result_df.loc[
+        qa_result_df["タイムスタンプ"] == target,
+        column_names["WordPerMinutes"],
+    ] = word_per_minutes
     return qa_result_df
 
 
@@ -267,7 +283,9 @@ def analyze_text(qa_result_df):
         texts = riko_texts["text"].tolist()
         start_seconds = riko_texts["start_seconds"].tolist()
         end_seconds = riko_texts["end_seconds"].tolist()
-        speech_rate = calculate_speech_rate(texts, start_seconds, end_seconds)
+        char_per_minutes, word_per_minutes = calculate_speech_rate(
+            texts, start_seconds, end_seconds
+        )
 
         id = riko_text_file.split("/")[-2]
         if int(id) < 10:
@@ -306,7 +324,8 @@ def analyze_text(qa_result_df):
             percentage_negative_verb_adj,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
-            speech_rate,
+            char_per_minutes,
+            word_per_minutes,
         )
 
     for igaku_text_file in igaku_text_files:
@@ -315,7 +334,9 @@ def analyze_text(qa_result_df):
         texts = igaku_texts["text"].tolist()
         start_seconds = igaku_texts["start_seconds"].tolist()
         end_seconds = igaku_texts["end_seconds"].tolist()
-        speech_rate = calculate_speech_rate(texts, start_seconds, end_seconds)
+        char_per_minutes, word_per_minutes = calculate_speech_rate(
+            texts, start_seconds, end_seconds
+        )
 
         id = igaku_text_file.split("/")[-2]
         target = f"psy_c_{id}"
@@ -352,7 +373,8 @@ def analyze_text(qa_result_df):
             percentage_negative_verb_adj,
             percentage_positive_nouns,
             percentage_positive_verb_adj,
-            speech_rate,
+            char_per_minutes,
+            word_per_minutes,
         )
 
     os.makedirs("text_analysis", exist_ok=True)
