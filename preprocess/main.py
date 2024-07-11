@@ -24,8 +24,7 @@ def get_subject_segments(audio, min_silence_len=3000, silence_thresh=-50):
     )
     subject_segments = []
     for start, end in nonsilent_segments:
-        if end - start > 300:  # 発話区間が0.3s以上のとき抜き出す
-            subject_segments.append((start, end))
+        subject_segments.append((start, end))
     logger.info("Successfully get subject segments!")
     return subject_segments
 
@@ -34,7 +33,7 @@ def get_subject_text_list(audio_file, start, end):
     audio = audio_from_path(audio_file)
     result = transcribe(REAZON_MODEL, audio)
     text = result.text
-    if len(text) > 1:  # 2文字以上の発話のみ書き込む
+    if len(text) > 0:
         return [start / 1000, end / 1000, text]  # ミリ秒を秒に直してからCSVに書き込む
     return None
 

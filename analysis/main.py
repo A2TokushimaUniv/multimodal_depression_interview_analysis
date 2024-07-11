@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 from logzero import logger
 
 
@@ -9,12 +10,26 @@ def get_significant_pairs(correlation_matrix, threshold):
     # 絶対値が閾値以上のペアを見つける
     corr_pairs = correlation_matrix.unstack()
     significant_pairs = corr_pairs[abs(corr_pairs) >= threshold]
-    # 同一ペアを除外
     significant_pairs = significant_pairs[
         significant_pairs.index.get_level_values(0)
         != significant_pairs.index.get_level_values(1)
     ]
     significant_pairs = significant_pairs.drop_duplicates()
+
+    # p値を計算し、辞書に格納
+    p_values = {}
+    for pair in significant_pairs.index:
+        col1, col2 = pair
+        _, p_value = stats.pearsonr(correlation_matrix[col1], correlation_matrix[col2])
+        p_values[pair] = p_value
+
+    # 結果をデータフレームに変換
+    significant_pairs_df = pd.DataFrame(significant_pairs, columns=["correlation"])
+    significant_pairs_df["p_value"] = significant_pairs_df.index.map(p_values)
+
+    # インデックスをカラムに変換
+    significant_pairs_df.reset_index(inplace=True)
+    significant_pairs_df.columns = ["Feature1", "Feature2", "correlation", "p_value"]
 
     # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
     questionnaire_columns = (
@@ -70,27 +85,21 @@ def get_significant_pairs(correlation_matrix, threshold):
     ]
 
     multimodal_feature_columns = set(au_columns + feature_columns)
-    significant_pairs = significant_pairs[
+    significant_pairs_df = significant_pairs_df[
         ~(
             (
-                significant_pairs.index.get_level_values(0).isin(questionnaire_columns)
-                & significant_pairs.index.get_level_values(1).isin(
-                    questionnaire_columns
-                )
+                significant_pairs_df["Feature1"].isin(questionnaire_columns)
+                & significant_pairs_df["Feature2"].isin(questionnaire_columns)
             )
             | (
-                significant_pairs.index.get_level_values(0).isin(
-                    multimodal_feature_columns
-                )
-                & significant_pairs.index.get_level_values(1).isin(
-                    multimodal_feature_columns
-                )
+                significant_pairs_df["Feature1"].isin(multimodal_feature_columns)
+                & significant_pairs_df["Feature2"].isin(multimodal_feature_columns)
             )
         )
     ]
 
     file_suffix = str(threshold).replace(".", "")
-    significant_pairs.to_csv(f"significant_pairs_{file_suffix}.csv")
+    significant_pairs_df.to_csv(f"significant_pairs_{file_suffix}.csv", index=False)
 
 
 def get_heatmap(correlation_matrix):
@@ -117,7 +126,6 @@ def main(input_file, threshold):
     df = pd.read_csv(input_file)
 
     logger.info("Calculating correlation matrix...")
-    # タイムスタンプとLevelとFlagに関する列を削除
     columns_to_exclude = [
         col
         for col in df.columns
