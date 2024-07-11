@@ -65,6 +65,8 @@ def get_significant_pairs(correlation_matrix, threshold):
         "Per_Pos_VerbAdj",
         "Per_Neg_Noun",
         "Per_Neg_VerbAdj",
+        "CharPerMinutes",
+        "WordPerMinutes",
     ]
 
     multimodal_feature_columns = set(au_columns + feature_columns)
@@ -138,7 +140,7 @@ if __name__ == "__main__":
         type=str,
     )
     parser.add_argument(
-        "--threshold", default=0.5, help="Correlation threshold", type=float
+        "--threshold", default=0.3, help="Correlation threshold", type=float
     )
     args = parser.parse_args()
     input_file = args.input_file
