@@ -29,6 +29,7 @@
 - `Pos_Word_Count`,`Neg_Word_Count`: ポジティブ・ネガティブな名詞・用言の総数
 - `Per_Pos_Noun`, `Per_Neg_Noun`: 被験者テキスト中の全名詞のなかのポジティブ・ネガティブな名詞の割合
 - `Per_Pos_VerbAdj`,`Per_Neg_VerbAdj`: 被験者テキスト中の全用言のなかのポジティブ・ネガティブな用言の割合
+- `CharPerMinutes`, `WordPerMinutes`: 被験者が 1 分間で発話した文字数・単語数
 
 #### 音声データ
 
@@ -38,6 +39,8 @@
 
 #### 動画データ
 
-- `docker run -v path_to_project:/home/openface-build/counseling -it algebr/openface:latest`
-- `cd counseling/feature_extraction`
-- `./openface.sh ../../build/bin/FeatureExtraction`
+以下の手順で OpenFace を用いて、特徴量を抽出する
+
+- 1. `docker run -v path_to_project:/home/openface-build/counseling -it algebr/openface:latest`
+- 2. `cd counseling/feature_extraction`
+- 3. `./openface.sh ../../build/bin/FeatureExtraction`
