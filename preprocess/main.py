@@ -2,7 +2,6 @@ from pydub.silence import detect_nonsilent
 from utils import make_processed_data_dir
 import os
 from pydub import AudioSegment
-import pickle
 from logzero import logger
 import argparse
 from moviepy.editor import VideoFileClip, concatenate_videoclips
@@ -15,9 +14,7 @@ REAZON_MODEL = load_model(device="cuda")
 
 
 # 音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
-def get_subject_segments(
-    audio, output_dir=None, min_silence_len=3000, silence_thresh=-50
-):
+def get_subject_segments(audio, min_silence_len=3000, silence_thresh=-50):
     logger.info("Detecting subject segments...")
     nonsilent_segments = detect_nonsilent(
         audio,
@@ -29,10 +26,6 @@ def get_subject_segments(
     for start, end in nonsilent_segments:
         if end - start > 300:  # 発話区間が0.3s以上のとき抜き出す
             subject_segments.append((start, end))
-    # 取得した区間をpickleで保存
-    if output_dir:
-        with open(os.path.join(output_dir, "subject_segments.pickle"), mode="wb") as f:
-            pickle.dump(subject_segments, f)
     logger.info("Successfully get subject segments!")
     return subject_segments
 
