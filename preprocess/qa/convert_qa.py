@@ -213,7 +213,6 @@ def main(before_qa_file, after_qa_file, output_file):
     # 分析対象の列だけを抜き出す
     before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
-    # TODO: 項目ごとに修正する
     big5_df = before_qa_df.iloc[:, 0:10]
     # AQは50問
     aq_df = before_qa_df.iloc[:, 10:60]
