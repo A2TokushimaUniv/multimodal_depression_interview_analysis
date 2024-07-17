@@ -43,35 +43,39 @@ def convert_big5(big5_df):
         big5_extrovert_df.iloc[:, 0], big5_extrovert_df.iloc[:, 1], "BIG5_Extrovert"
     )
 
-    big5_cooperative_df = big5_df.iloc[:, [1, 6]]
-    big5_cooperative_sum_df = big5_mapping_sum(
-        big5_cooperative_df.iloc[:, 1],
-        big5_cooperative_df.iloc[:, 0],
-        "BIG5_Cooperative",
+    big5_agreeableness_df = big5_df.iloc[:, [1, 6]]
+    big5_agreeableness_sum_df = big5_mapping_sum(
+        big5_agreeableness_df.iloc[:, 1],
+        big5_agreeableness_df.iloc[:, 0],
+        "BIG5_Agreeableness",
     )
 
-    big5_diligence_df = big5_df.iloc[:, [2, 7]]
-    big5_diligence_sum_df = big5_mapping_sum(
-        big5_diligence_df.iloc[:, 0], big5_diligence_df.iloc[:, 1], "BIG5_Diligence"
+    big5_conscientiousness_df = big5_df.iloc[:, [2, 7]]
+    big5_conscientiousness_sum_df = big5_mapping_sum(
+        big5_conscientiousness_df.iloc[:, 0],
+        big5_conscientiousness_df.iloc[:, 1],
+        "BIG5_Conscientiousness",
     )
 
-    big5_neurotic_df = big5_df.iloc[:, [3, 8]]
-    big5_neurotic_sum_df = big5_mapping_sum(
-        big5_neurotic_df.iloc[:, 0], big5_neurotic_df.iloc[:, 1], "BIG5_Neurotic"
+    big5_neuroticism_df = big5_df.iloc[:, [3, 8]]
+    big5_neuroticism_sum_df = big5_mapping_sum(
+        big5_neuroticism_df.iloc[:, 0],
+        big5_neuroticism_df.iloc[:, 1],
+        "BIG5_Neuroticism",
     )
 
-    big5_open_df = big5_df.iloc[:, [4, 9]]
-    big5_open_sum_df = big5_mapping_sum(
-        big5_open_df.iloc[:, 0], big5_open_df.iloc[:, 1], "BIG5_Open"
+    big5_openness_df = big5_df.iloc[:, [4, 9]]
+    big5_openness_sum_df = big5_mapping_sum(
+        big5_openness_df.iloc[:, 0], big5_openness_df.iloc[:, 1], "BIG5_Openness"
     )
 
     converted_big5_df = pd.concat(
         [
             big5_extrovert_sum_df,
-            big5_open_sum_df,
-            big5_neurotic_sum_df,
-            big5_diligence_sum_df,
-            big5_cooperative_sum_df,
+            big5_openness_sum_df,
+            big5_neuroticism_sum_df,
+            big5_conscientiousness_sum_df,
+            big5_agreeableness_sum_df,
         ],
         axis=1,
     )
