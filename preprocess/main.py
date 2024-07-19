@@ -7,6 +7,8 @@ import argparse
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
 from reazonspeech.nemo.asr import load_model, transcribe, audio_from_path
+from feat import Detector
+
 
 # ReazonSpeech model
 # See: https://huggingface.co/reazon-research/reazonspeech-nemo-v2
@@ -100,6 +102,13 @@ def get_subject_video(
     return
 
 
+def get_facial_features(video_file, face_output_file):
+    detector = Detector()
+    video_prediction = detector.detect_video(video_file)
+    video_prediction.to_csv(face_output_file, index=False)
+    return
+
+
 def main(video_file, audio_file, output_dir, faculty, dir_num):
     make_processed_data_dir(output_dir, dir_num)
     # pydubで音声ファイルを開く
@@ -120,10 +129,16 @@ def main(video_file, audio_file, output_dir, faculty, dir_num):
         audio_output_file,
         text_output_file,
     )
+
     video_output_file_name = os.path.splitext(os.path.basename(video_file))[0]
     video_output_dir = os.path.join(output_dir, "video", faculty, dir_num)
     video_output_file = os.path.join(video_output_dir, f"{video_output_file_name}.mp4")
     get_subject_video(video_file, subject_segments, video_output_dir, video_output_file)
+
+    face_output_file_name = os.path.splitext(os.path.basename(video_file))[0]
+    face_output_dir = os.path.join(output_dir, "face_pyfeat", faculty, dir_num)
+    face_output_file = os.path.join(face_output_dir, f"{face_output_file_name}.csv")
+    get_facial_features(video_output_file, face_output_file)
     return
 
 

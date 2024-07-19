@@ -4,15 +4,15 @@
 
 ### 実行方法
 
-`python main.py --input_file=qa_file_path --output_file=qa_result_file_path`
+`python main.py --input_qa_file=qa_file_path --input_data_dir=../data/preprocessed_data --output_qa_file=qa_result_file_path`
 
 `--no_text`, `--no_face`, `--no_audio`を付けることで、必要ないモダリティの特徴量抽出をしないようにもできます。
 
-例えば、言語データの特徴量抽出のみを行いたい場合、`python main.py --input_file=qa_file_path --output_file=qa_result_file_path --no_face --no_audio`とすることで、言語特徴量のみを抽出します。
+例えば、言語データの特徴量抽出のみを行いたい場合、`python main.py --input_qa_file=qa_file_path --input_data_dir=../data/preprocessed_data --output_qa_file=qa_result_file_path --no_face --no_audio`とすることで、言語特徴量のみを抽出します。
 
 ### 実行結果
 
-アンケートの集計結果（`input_file`）にマルチモーダル特徴量に関する列を追加した CSV ファイル（`output_file`）が生成されます。
+アンケートの集計結果（`input_qa_file`）にマルチモーダル特徴量に関する列を追加した CSV ファイル（`output_qa_file`）が生成されます。
 
 ### 分析方法
 
@@ -39,8 +39,4 @@
 
 #### 動画データ
 
-以下の手順で OpenFace を用いて、特徴量を抽出する
-
-- 1. `docker run -v path_to_project:/home/openface-build/counseling -it algebr/openface:latest`
-- 2. `cd counseling/feature_extraction`
-- 3. `./openface.sh ../../build/bin/FeatureExtraction`
+前処理段階で動画データから得られた顔表情のデータをもとに、Action Unit の強さの平均値・標準偏差を計算します。

@@ -16,3 +16,4 @@ transformers
 ginza
 ja_ginza_electra
 Cython
+py-feat

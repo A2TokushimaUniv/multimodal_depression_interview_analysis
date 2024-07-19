@@ -4,12 +4,12 @@ import glob
 from logzero import logger
 
 
-def analyze_face(qa_result_df):
+def analyze_face(qa_result_df, input_data_dir):
     riko_csv_file_list = glob.glob(
-        os.path.join("../data/preprocessed_data/face/riko", "*.csv"), recursive=True
+        os.path.join(input_data_dir, "face/riko", "*.csv"), recursive=True
     )
     igaku_csv_file_list = glob.glob(
-        os.path.join("../data/preprocessed_data/face/igaku", "*.csv"), recursive=True
+        os.path.join(input_data_dir, "face/igaku", "*.csv"), recursive=True
     )
     csv_file_list = riko_csv_file_list + igaku_csv_file_list
     for csv_file in csv_file_list:
