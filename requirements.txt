@@ -1,7 +1,6 @@
 python-dotenv
 pydub
 logzero
-openai
 opencv-python
 opensmile
 torch
@@ -12,8 +11,7 @@ pandas
 moviepy
 matplotlib
 seaborn
-transformers
 ginza
 ja_ginza_electra
 Cython
-py-feat
+ruff

@@ -119,11 +119,11 @@ def add_results(
 
 def analyze_audio(qa_result_df, input_data_dir):
     riko_audio_files = glob.glob(
-        os.path.join(input_data_dir, "voice/riko", "*", "audioNLP*.wav"),
+        os.path.join(input_data_dir, "voice", "riko", "*", "audioNLP*.wav"),
         recursive=True,
     )
     igaku_audio_files = glob.glob(
-        os.path.join(input_data_dir, "voice/igaku", "*", "*_zoom_音声_被験者*.wav"),
+        os.path.join(input_data_dir, "voice", "igaku", "*", "*_zoom_音声_被験者*.wav"),
         recursive=True,
     )
 

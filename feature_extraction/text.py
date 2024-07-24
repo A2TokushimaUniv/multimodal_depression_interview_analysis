@@ -258,11 +258,11 @@ def write_result(file_name, result_dict):
 
 def analyze_text(qa_result_df, input_data_dir):
     riko_text_files = glob.glob(
-        os.path.join(input_data_dir, "text/riko", "*", "*.csv"),
+        os.path.join(input_data_dir, "text", "riko", "*", "*.csv"),
         recursive=True,
     )
     igaku_text_files = glob.glob(
-        os.path.join(input_data_dir, "text/igaku", "*", "*.csv"),
+        os.path.join(input_data_dir, "text", "igaku", "*", "*.csv"),
         recursive=True,
     )
     nouns_file = "./sentiment_polarity/名詞.tsv"

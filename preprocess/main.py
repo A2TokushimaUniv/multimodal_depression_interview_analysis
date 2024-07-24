@@ -6,8 +6,9 @@ from logzero import logger
 import argparse
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
-from reazonspeech.nemo.asr import load_model, transcribe, audio_from_path
-from feat import Detector
+from reazonspeech.nemo.asr import transcribe, audio_from_path
+import glob
+from reazonspeech.nemo.asr import load_model
 
 
 # ReazonSpeech model
@@ -102,14 +103,7 @@ def get_subject_video(
     return
 
 
-def get_facial_features(video_file, face_output_file):
-    detector = Detector()
-    video_prediction = detector.detect_video(video_file)
-    video_prediction.to_csv(face_output_file, index=False)
-    return
-
-
-def main(video_file, audio_file, output_dir, faculty, dir_num):
+def preprocess(video_file, audio_file, output_dir, faculty, dir_num):
     make_processed_data_dir(output_dir, dir_num)
     # pydubで音声ファイルを開く
     audio = AudioSegment.from_file(audio_file)
@@ -134,42 +128,64 @@ def main(video_file, audio_file, output_dir, faculty, dir_num):
     video_output_dir = os.path.join(output_dir, "video", faculty, dir_num)
     video_output_file = os.path.join(video_output_dir, f"{video_output_file_name}.mp4")
     get_subject_video(video_file, subject_segments, video_output_dir, video_output_file)
-
-    face_output_file_name = os.path.splitext(os.path.basename(video_file))[0]
-    face_output_dir = os.path.join(output_dir, "face_pyfeat", faculty, dir_num)
-    face_output_file = os.path.join(face_output_dir, f"{face_output_file_name}.csv")
-    get_facial_features(video_output_file, face_output_file)
     return
+
+
+def main(input_data_dir, output_dir):
+    riko_audio_files = sorted(
+        glob.glob(
+            os.path.join(input_data_dir, "voice", "riko", "*", "audioNLP*.m4a"),
+            recursive=True,
+        )
+    )
+    riko_video_files = sorted(
+        glob.glob(
+            os.path.join(input_data_dir, "video", "riko", "*", "*.mp4"),
+            recursive=True,
+        )
+    )
+    igaku_audio_files = sorted(
+        glob.glob(
+            os.path.join(
+                input_data_dir, "voice", "igaku", "*", "*_zoom_音声_被験者*.m4a"
+            ),
+            recursive=True,
+        )
+    )
+    igaku_video_files = sorted(
+        glob.glob(
+            os.path.join(input_data_dir, "video", "igaku", "*", "*.mp4"),
+            recursive=True,
+        )
+    )
+
+    for riko_audio, riko_video in zip(riko_audio_files, riko_video_files):
+        dir_num = os.path.basename(os.path.dirname(riko_audio))
+        preprocess(riko_video, riko_audio, output_dir, "riko", dir_num)
+
+    for igaku_audio, igaku_video in zip(igaku_audio_files, igaku_video_files):
+        dir_num = os.path.basename(os.path.dirname(igaku_audio))
+        preprocess(igaku_video, igaku_audio, output_dir, "igaku", dir_num)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_video", help="Path to input video file", required=True)
-    parser.add_argument("--input_audio", help="Path to input audio file", required=True)
+    parser.add_argument(
+        "--input_data_dir",
+        help="Path to input data directory",
+        type=str,
+        default="../data/raw_data",
+    )
 
     parser.add_argument(
         "--output_dir",
-        default="preprocessed_data",
+        default="../data/preprocessed_data",
         help="Path to output directory",
     )
-    parser.add_argument(
-        "--faculty",
-        choices=["riko", "igaku"],
-        required=True,
-        help="Faculty of the subject",
-    )
-    parser.add_argument("--dir_num", default="0", help="Directory number")
 
     args = parser.parse_args()
-    video_file = args.input_video
-    audio_file = args.input_audio
+    input_data_dir = args.input_data_dir
     output_dir = args.output_dir
-    faculty = args.faculty
-    dir_num = args.dir_num
 
-    logger.info(f"Input video: {video_file}")
-    logger.info(f"Input audio: {audio_file}")
     logger.info(f"Output dir: {output_dir}")
-    logger.info(f"Data of Faculty: {faculty}")
-    logger.info(f"Directory number: {dir_num}")
-    main(video_file, audio_file, output_dir, faculty, dir_num)
+    main(input_data_dir, output_dir)
