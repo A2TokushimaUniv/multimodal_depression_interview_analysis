@@ -99,6 +99,3 @@ def extract_wav2vec2_features(input_data_dir):
             igaku_audio_files, input_data_dir, get_igaku_target(igaku_data_dir)
         )
     return
-
-
-extract_wav2vec2_features("../data/preprocessed_data")

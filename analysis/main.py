@@ -139,7 +139,7 @@ def main(input_file, output_dir, threshold):
     columns_to_exclude = [
         col
         for col in df.columns
-        if "Level" in col or "Flag" in col or "タイムスタンプ" == col
+        if "Level" in col or "Flag" in col or "Subject_ID" == col
     ]
     df = df.drop(columns=columns_to_exclude)
     calculate_statistics(output_dir, df)
