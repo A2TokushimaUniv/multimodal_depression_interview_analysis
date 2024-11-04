@@ -1,5 +1,5 @@
 import numpy as np
-from utils import save_as_npy
+from utils import save_as_npy, get_riko_target, get_igaku_target
 import librosa
 import torch
 from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
@@ -13,6 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL_NAME = "facebook/wav2vec2-large-xlsr-53"
 feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained(MODEL_NAME)
 model = Wav2Vec2Model.from_pretrained(MODEL_NAME).to(device)
+model.eval()
 
 
 def _input_wav2vec2(audio_file):
@@ -45,6 +46,7 @@ def _get_wav2vec2_features(audio_files, output_dir, target):
     """
     ある被験者のwav2vec2の特徴量を取得する
     """
+    wav2vec2_dir = "wav2vec2"
     features = []
     for audio_file in audio_files:
         wav2vec2_feature = _input_wav2vec2(audio_file)
@@ -52,27 +54,24 @@ def _get_wav2vec2_features(audio_files, output_dir, target):
             features.append(wav2vec2_feature)
     concatenated_features = torch.cat(features, dim=0)
 
-    os.makedirs(os.path.join(output_dir, "wav2vec2"), exist_ok=True)
+    os.makedirs(os.path.join(output_dir, wav2vec2_dir), exist_ok=True)
     np.savetxt(
-        os.path.join(output_dir, "wav2vec2", f"{target}.csv"),
+        os.path.join(output_dir, wav2vec2_dir, f"{target}.csv"),
         concatenated_features.cpu().numpy(),  # CPUに移動してからnumpyに変換する
         delimiter=",",
     )
     save_as_npy(
-        os.path.join(output_dir, "wav2vec2", f"{target}.csv"),
-        os.path.join(output_dir, "wav2vec2_npy"),
+        os.path.join(output_dir, wav2vec2_dir, f"{target}.csv"),
+        os.path.join(output_dir, f"{wav2vec2_dir}_npy"),
         skip_header=False,
     )
     return
 
 
-def analyze_audio_wav2vec2(input_data_dir):
+def extract_wav2vec2_features(input_data_dir):
     riko_audio_dirs = os.listdir(os.path.join(input_data_dir, "voice", "riko"))
     for riko_audio_dir in riko_audio_dirs:
-        if int(riko_audio_dir) < 10:
-            target = f"riko0{riko_audio_dir}"
-        else:
-            target = f"riko{riko_audio_dir}"
+        target = get_riko_target(riko_audio_dir)
         # 音声ファイルを一度に入力するとメモリが足りなくなるので、一発話ずつ入力する
         riko_audio_files = glob.glob(
             os.path.join(
@@ -97,6 +96,9 @@ def analyze_audio_wav2vec2(input_data_dir):
             key=lambda x: int(os.path.basename(x).split("_")[1].split(".")[0])
         )
         _get_wav2vec2_features(
-            igaku_audio_files, input_data_dir, f"psy_c_{igaku_data_dir}"
+            igaku_audio_files, input_data_dir, get_igaku_target(igaku_data_dir)
         )
     return
+
+
+extract_wav2vec2_features("../data/preprocessed_data")

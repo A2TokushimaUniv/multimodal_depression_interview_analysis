@@ -2,7 +2,7 @@ import opensmile
 import glob
 import os
 from logzero import logger
-from utils import save_as_npy
+from utils import save_as_npy, get_riko_target, get_igaku_target
 
 """
 OpenSMILEの設定、特徴量セットにはeGeMAPSv02を使用
@@ -147,13 +147,14 @@ def save_llds(llds_features, output_dir, target):
     """
     LLDsを保存する
     """
-    os.makedirs(os.path.join(output_dir, "opensmile"), exist_ok=True)
-    csv_file_path = os.path.join(output_dir, "opensmile", f"{target}.csv")
+    opensmile_dir = "opensmile"
+    os.makedirs(os.path.join(output_dir, opensmile_dir), exist_ok=True)
+    csv_file_path = os.path.join(output_dir, opensmile_dir, f"{target}.csv")
     llds_features.to_csv(csv_file_path, index=False)
-    save_as_npy(csv_file_path, os.path.join(output_dir, "opensmile_npy"))
+    save_as_npy(csv_file_path, os.path.join(output_dir, f"{opensmile_dir}_npy"))
 
 
-def analyze_audio_opensmile(qa_result_df, input_data_dir):
+def extract_opensmile_features(qa_result_df, input_data_dir):
     """
     音声をOpenSMILEで特徴量抽出する
     """
@@ -176,10 +177,7 @@ def analyze_audio_opensmile(qa_result_df, input_data_dir):
 
         logger.info(f"Extracting openSMILE LLDs features from {riko_audio_file}....")
         data_id = riko_audio_file.split("/")[-2]
-        if int(data_id) < 10:
-            target = f"riko0{data_id}"
-        else:
-            target = f"riko{data_id}"
+        target = get_riko_target(data_id)
         llds_features = smile_llds.process_file(riko_audio_file)
         save_llds(llds_features, input_data_dir, target)
 
@@ -210,7 +208,7 @@ def analyze_audio_opensmile(qa_result_df, input_data_dir):
 
         logger.info(f"Extracting openSMILE LLDs features from {igaku_audio_file}....")
         data_id = igaku_audio_file.split("/")[-2]
-        target = f"psy_c_{data_id}"
+        target = get_igaku_target(data_id)
         llds_features = smile_llds.process_file(igaku_audio_file)
         save_llds(llds_features, input_data_dir, target)
 

@@ -49,11 +49,12 @@ def analyze_openface_stats(qa_result_df, input_data_dir):
     """
     OpenFaceの特徴量を使って統計量を計算する
     """
+    openface_dir = "openface"
     csv_files = glob.glob(
-        os.path.join(input_data_dir, "openface", "*.csv"), recursive=True
+        os.path.join(input_data_dir, openface_dir, "*.csv"), recursive=True
     )
 
     for csv_file in csv_files:
-        save_as_npy(csv_file, os.path.join(input_data_dir, "openface_npy"))
+        save_as_npy(csv_file, os.path.join(input_data_dir, f"{openface_dir}_npy"))
         qa_result_df = _get_results(csv_file, qa_result_df)
     return qa_result_df

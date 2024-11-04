@@ -4,6 +4,7 @@ from logzero import logger
 import pandas as pd
 import spacy
 from collections import Counter
+from utils import get_riko_target, get_igaku_target
 
 nlp = spacy.load("ja_ginza_electra")
 
@@ -317,10 +318,7 @@ def analyze_text(qa_result_df, input_data_dir):
         )
 
         data_id = riko_text_file.split("/")[-2]
-        if int(data_id) < 10:
-            target = f"riko0{data_id}"
-        else:
-            target = f"riko{data_id}"
+        target = get_riko_target(data_id)
         (
             negative_noun_count,
             negative_verb_adj_count,
@@ -368,7 +366,7 @@ def analyze_text(qa_result_df, input_data_dir):
         )
 
         data_id = igaku_text_file.split("/")[-2]
-        target = f"psy_c_{data_id}"
+        target = get_igaku_target(data_id)
         (
             negative_noun_count,
             negative_verb_adj_count,
