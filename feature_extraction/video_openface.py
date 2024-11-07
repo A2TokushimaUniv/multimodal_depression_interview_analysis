@@ -25,20 +25,20 @@ def _get_results(csv_file, qa_result_df):
     au_intensity_std_overall = au_intensity_df.stack().std()
     logger.info(f"AU_r_Stddev: {au_intensity_std_overall}")
 
-    timestamp = os.path.splitext(os.path.basename(csv_file))[0]
-    qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUall_r_Mean"] = (
+    subject_id = os.path.splitext(os.path.basename(csv_file))[0]
+    qa_result_df.loc[qa_result_df["Subject_ID"] == subject_id, "AUall_r_Mean"] = (
         au_intensity_mean_overall
     )
-    qa_result_df.loc[qa_result_df["タイムスタンプ"] == timestamp, "AUall_r_Stddev"] = (
+    qa_result_df.loc[qa_result_df["Subject_ID"] == subject_id, "AUall_r_Stddev"] = (
         au_intensity_std_overall
     )
     for au in au_intensity_columns:
         qa_result_df.loc[
-            qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Mean".strip()
+            qa_result_df["Subject_ID"] == subject_id, f"{au}_Mean".strip()
         ] = au_intensity_mean[au]
         logger.info(f"{au}_Mean: {au_intensity_mean[au]}")
         qa_result_df.loc[
-            qa_result_df["タイムスタンプ"] == timestamp, f"{au}_Stddev".strip()
+            qa_result_df["Subject_ID"] == subject_id, f"{au}_Stddev".strip()
         ] = au_intensity_std[au]
         logger.info(f"{au}_Stddev: {au_intensity_std[au]}")
 
@@ -49,11 +49,12 @@ def analyze_openface_stats(qa_result_df, input_data_dir):
     """
     OpenFaceの特徴量を使って統計量を計算する
     """
+    openface_dir = "openface"
     csv_files = glob.glob(
-        os.path.join(input_data_dir, "openface", "*.csv"), recursive=True
+        os.path.join(input_data_dir, openface_dir, "*.csv"), recursive=True
     )
 
     for csv_file in csv_files:
-        save_as_npy(csv_file, os.path.join(input_data_dir, "openface_npy"))
+        save_as_npy(csv_file, os.path.join(input_data_dir, f"{openface_dir}_npy"))
         qa_result_df = _get_results(csv_file, qa_result_df)
     return qa_result_df

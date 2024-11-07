@@ -3,6 +3,7 @@
 # そのエクセルファイルを生成するスクリプト
 """
 
+import os
 import pandas as pd
 from logzero import logger
 
@@ -92,7 +93,7 @@ def convert_aq(aq_df):
     converted_aq_df = df_mapping_sum(aq_df, aq_mapping, "AQ")
     # AQ スコアが cutoff_point 以上であれば 1、そうでなければ 0 の列を追加
     converted_aq_df["AQ_Flag"] = converted_aq_df["AQ"].apply(
-        lambda x: "あり" if x >= aq_cutoff_point else "なし"
+        lambda x: 1 if x >= aq_cutoff_point else 0
     )
     return converted_aq_df
 
@@ -109,13 +110,13 @@ def convert_gad7(gad7_df):
 
     def categorize_gad7_score(score):
         if 5 <= score <= 9:
-            return "軽度"
+            return 1
         elif 10 <= score <= 14:
-            return "中等度"
+            return 2
         elif 15 <= score <= 21:
-            return "重度"
+            return 3
         else:
-            return "なし"
+            return 0
 
     converted_gad7_df["GAD7_Level"] = converted_gad7_df["GAD7"].apply(
         categorize_gad7_score
@@ -129,13 +130,13 @@ def convert_lsas(lsas_df):
 
     def categorize_lsas_score(score):
         if 30 <= score <= 40:
-            return "境界域"
+            return 1
         elif 50 <= score <= 70:
-            return "中等症"
+            return 2
         elif score >= 71:
-            return "重症"
+            return 3
         else:
-            return "なし"
+            return 0
 
     converted_lsas_df["LSAS_Level"] = converted_lsas_df["LSAS"].apply(
         categorize_lsas_score
@@ -148,7 +149,7 @@ def convert_phq9(phq9_df):
     phq_mapping = {"全くない": 0, "数日": 1, "半分以上": 2, "ほとんど毎日": 3}
     converted_phq9_df = df_mapping_sum(phq9_df, phq_mapping, "PHQ9")
     converted_phq9_df["PHQ9_Flag"] = converted_phq9_df["PHQ9"].apply(
-        lambda x: "あり" if x >= phq9_cutoff_point else "なし"
+        lambda x: 1 if x >= phq9_cutoff_point else 0
     )
     return converted_phq9_df
 
@@ -212,7 +213,8 @@ def main(before_qa_file, after_qa_file, output_file):
         "Interview_Sad",
     ]
 
-    timestamp_df = before_qa_df.iloc[:, 0]
+    subject_id_df = before_qa_df.iloc[:, 0]
+    subject_id_df = subject_id_df.rename("Subject_ID")
     # 分析対象の列だけを抜き出す
     before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
@@ -234,23 +236,24 @@ def main(before_qa_file, after_qa_file, output_file):
     converted_df = convert_section(
         big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
-    result_df = pd.concat([timestamp_df, interview_df, converted_df], axis=1)
+    result_df = pd.concat([subject_id_df, interview_df, converted_df], axis=1)
     result_df.to_csv(output_file, index=False)
     return
 
 
 if __name__ == "__main__":
-    riko_before_qa_file = "../data/raw_data/qa/riko/riko_before_clean.csv"
-    riko_after_qa_file = "../data/raw_data/qa/riko/riko_after.csv"
-    riko_output_file = "../data/preprocessed_data/qa/riko_qa_result.csv"
+    os.makedirs("../../data/preprocessed_data/qa", exist_ok=True)
+    riko_before_qa_file = "../../data/raw_data/qa/riko/riko_before_clean.csv"
+    riko_after_qa_file = "../../data/raw_data/qa/riko/riko_after.csv"
+    riko_output_file = "../../data/preprocessed_data/qa/riko_qa_result.csv"
     logger.info("Input Before QA file: {}".format(riko_before_qa_file))
     logger.info("input After QA file: {}".format(riko_after_qa_file))
     logger.info("Output file: {}".format(riko_output_file))
     main(riko_before_qa_file, riko_after_qa_file, riko_output_file)
 
-    igaku_before_qa_file = "../data/raw_data/qa/igaku/igaku_before.csv"
-    igaku_after_qa_file = "../data/raw_data/qa/igaku/igaku_after.csv"
-    igaku_output_file = "../data/preprocessed_data/qa/igaku_qa_result.csv"
+    igaku_before_qa_file = "../../data/raw_data/qa/igaku/igaku_before.csv"
+    igaku_after_qa_file = "../../data/raw_data/qa/igaku/igaku_after.csv"
+    igaku_output_file = "../../data/preprocessed_data/qa/igaku_qa_result.csv"
     logger.info("Input Before QA file: {}".format(igaku_before_qa_file))
     logger.info("input After QA file: {}".format(igaku_after_qa_file))
     logger.info("Output file: {}".format(igaku_output_file))

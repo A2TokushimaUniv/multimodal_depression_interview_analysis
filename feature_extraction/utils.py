@@ -13,3 +13,16 @@ def save_as_npy(csv_file, output_dir, skip_header=True):
         data = np.loadtxt(csv_file, delimiter=",")
     npy_file_path = os.path.basename(os.path.splitext(csv_file)[0]) + ".npy"
     np.save(os.path.join(output_dir, npy_file_path), data)
+
+
+def get_riko_target(data_id):
+    if int(data_id) < 10:
+        target = f"riko0{data_id}"
+    else:
+        target = f"riko{data_id}"
+    return target
+
+
+def get_igaku_target(data_id):
+    target = f"psy_c_{data_id}"
+    return target

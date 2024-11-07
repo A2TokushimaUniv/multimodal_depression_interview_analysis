@@ -2,7 +2,9 @@ import opensmile
 import glob
 import os
 from logzero import logger
-from utils import save_as_npy
+from utils import save_as_npy, get_riko_target, get_igaku_target
+import pandas as pd
+import librosa
 
 """
 OpenSMILEの設定、特徴量セットにはeGeMAPSv02を使用
@@ -32,7 +34,7 @@ column_names = {
 }
 
 
-def get_pitch_features(features):
+def _get_pitch_features(features):
     """
     ピッチ関連の特徴量を取得する
     """
@@ -43,7 +45,7 @@ def get_pitch_features(features):
     return pitch_mean, pitch_stddev
 
 
-def get_loudness_features(features):
+def _get_loudness_features(features):
     """
     声の大きさ関連の特徴量を取得
     """
@@ -54,7 +56,7 @@ def get_loudness_features(features):
     return loudness_mean, loudness_stddev
 
 
-def get_jitter_features(features):
+def _get_jitter_features(features):
     """
     ジッター関連の特徴量を取得
     """
@@ -65,7 +67,7 @@ def get_jitter_features(features):
     return jitter_mean, jitter_stddev
 
 
-def get_shimmer_features(features):
+def _get_shimmer_features(features):
     """
     shimmerr関連の特徴量を取得
     """
@@ -76,7 +78,7 @@ def get_shimmer_features(features):
     return shimmer_mean, shimmer_stddev
 
 
-def get_other_features(features):
+def _get_other_features(features):
     """
     その他の特徴量を取得
     """
@@ -89,7 +91,7 @@ def get_other_features(features):
     return HNRdBACF_sma3nz, F0semitone, F3frequency
 
 
-def add_results(
+def _add_results(
     qa_result_df,
     target,
     pitch_mean,
@@ -108,54 +110,55 @@ def add_results(
     結果をDataFrameに追加する
     """
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["PitchMean"]
+        qa_result_df["Subject_ID"] == target, column_names["PitchMean"]
     ] = pitch_mean
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["PitchStddev"]
+        qa_result_df["Subject_ID"] == target, column_names["PitchStddev"]
     ] = pitch_stddev
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["LoudnessMean"]
+        qa_result_df["Subject_ID"] == target, column_names["LoudnessMean"]
     ] = loudness_mean
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["LoudnessStddev"]
+        qa_result_df["Subject_ID"] == target, column_names["LoudnessStddev"]
     ] = loudness_stddev
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["JitterMean"]
+        qa_result_df["Subject_ID"] == target, column_names["JitterMean"]
     ] = jitter_mean
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["JitterStddev"]
+        qa_result_df["Subject_ID"] == target, column_names["JitterStddev"]
     ] = jitter_stddev
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["ShimmerMean"]
+        qa_result_df["Subject_ID"] == target, column_names["ShimmerMean"]
     ] = shimmer_mean
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["ShimmerStddev"]
+        qa_result_df["Subject_ID"] == target, column_names["ShimmerStddev"]
     ] = shimmer_stddev
+    qa_result_df.loc[qa_result_df["Subject_ID"] == target, column_names["HNRdBACF"]] = (
+        HNRdBACF_sma3nz
+    )
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["HNRdBACF"]
-    ] = HNRdBACF_sma3nz
-    qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["F0semitone"]
+        qa_result_df["Subject_ID"] == target, column_names["F0semitone"]
     ] = F0semitone
     qa_result_df.loc[
-        qa_result_df["タイムスタンプ"] == target, column_names["F3frequency"]
+        qa_result_df["Subject_ID"] == target, column_names["F3frequency"]
     ] = F3frequency
     return qa_result_df
 
 
-def save_llds(llds_features, output_dir, target):
+def _save_feature(feature, output_dir, target):
     """
     LLDsを保存する
     """
-    os.makedirs(os.path.join(output_dir, "opensmile"), exist_ok=True)
-    csv_file_path = os.path.join(output_dir, "opensmile", f"{target}.csv")
-    llds_features.to_csv(csv_file_path, index=False)
-    save_as_npy(csv_file_path, os.path.join(output_dir, "opensmile_npy"))
+    opensmile_dir = "opensmile"
+    os.makedirs(os.path.join(output_dir, opensmile_dir), exist_ok=True)
+    csv_file_path = os.path.join(output_dir, opensmile_dir, f"{target}.csv")
+    feature.to_csv(csv_file_path, index=False)
+    save_as_npy(csv_file_path, os.path.join(output_dir, f"{opensmile_dir}_npy"))
 
 
-def analyze_audio_opensmile(qa_result_df, input_data_dir):
+def _get_audio_files(input_data_dir):
     """
-    音声をOpenSMILEで特徴量抽出する
+    音声ファイルを取得する
     """
     riko_audio_files = glob.glob(
         os.path.join(input_data_dir, "voice", "riko", "*", "audioNLP*.wav"),
@@ -165,25 +168,74 @@ def analyze_audio_opensmile(qa_result_df, input_data_dir):
         os.path.join(input_data_dir, "voice", "igaku", "*", "*_zoom_音声_被験者*.wav"),
         recursive=True,
     )
+    return riko_audio_files, igaku_audio_files
+
+
+def _get_mean_llds(audio_path):
+    """
+    D-Vlogの元論文に記載されている方法でLLDを抽出する
+    1秒毎にLLDsを抽出・平均化し、全てのLLDsを連結したものを特徴量とする
+    frameStep, frameSizeの合わせ方は不明なので無視する
+    """
+    y, sr = librosa.load(audio_path, sr=None)
+    duration = int(librosa.get_duration(y=y, sr=sr))
+
+    lld_data = []
+    # 1秒ごとに音声を処理する
+    for i in range(duration):
+        start_sample = int(i * sr)
+        end_sample = int((i + 1) * sr)
+        y_segment = y[start_sample:end_sample]
+        # 音声セグメントが1秒に満たない場合はループを終了
+        if len(y_segment) < sr:
+            break
+        lld_result = smile_llds.process_signal(y_segment, sampling_rate=sr)
+        lld_mean = lld_result.mean(axis=0)
+        lld_data.append(lld_mean)
+    lld_df = pd.DataFrame(lld_data)
+    if duration != lld_df.shape[0]:
+        logger.warning(f"duration: {duration} != lld_df.shape[0]: {lld_df.shape[0]}")
+    return lld_df
+
+
+def extract_opensmile_lld_features(input_data_dir):
+    """
+    音声からopenSMILEのLLD特徴量を抽出する
+    """
+    riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
+    for riko_audio_file in riko_audio_files:
+        logger.info(f"Extracting openSMILE LLD features from {riko_audio_file}....")
+        features = _get_mean_llds(riko_audio_file)
+        data_id = riko_audio_file.split("/")[-2]
+        target = get_riko_target(data_id)
+        _save_feature(features, input_data_dir, target)
+    for igaku_audio_file in igaku_audio_files:
+        logger.info(f"Extracting openSMILE LLD features from {igaku_audio_file}....")
+        features = _get_mean_llds(igaku_audio_file)
+        data_id = igaku_audio_file.split("/")[-2]
+        target = get_igaku_target(data_id)
+        _save_feature(features, input_data_dir, target)
+    return
+
+
+def analyze_opensmile_stats(qa_result_df, input_data_dir):
+    """
+    音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
+    """
+    riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
     for riko_audio_file in riko_audio_files:
         logger.info(f"Extracting openSMILE stats features from {riko_audio_file}....")
         stats_features = smile_functions.process_file(riko_audio_file)
-        pitch_mean, pitch_stddev = get_pitch_features(stats_features)
-        loudness_mean, loudness_stddev = get_loudness_features(stats_features)
-        jitter_mean, jitter_stddev = get_jitter_features(stats_features)
-        shimmer_mean, shimmer_stddev = get_shimmer_features(stats_features)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = get_other_features(stats_features)
+        pitch_mean, pitch_stddev = _get_pitch_features(stats_features)
+        loudness_mean, loudness_stddev = _get_loudness_features(stats_features)
+        jitter_mean, jitter_stddev = _get_jitter_features(stats_features)
+        shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
+        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
 
-        logger.info(f"Extracting openSMILE LLDs features from {riko_audio_file}....")
         data_id = riko_audio_file.split("/")[-2]
-        if int(data_id) < 10:
-            target = f"riko0{data_id}"
-        else:
-            target = f"riko{data_id}"
-        llds_features = smile_llds.process_file(riko_audio_file)
-        save_llds(llds_features, input_data_dir, target)
+        target = get_riko_target(data_id)
 
-        qa_result_df = add_results(
+        qa_result_df = _add_results(
             qa_result_df,
             target,
             pitch_mean,
@@ -202,19 +254,16 @@ def analyze_audio_opensmile(qa_result_df, input_data_dir):
     for igaku_audio_file in igaku_audio_files:
         logger.info(f"Extracting openSMILE stats features from {igaku_audio_file}....")
         stats_features = smile_functions.process_file(igaku_audio_file)
-        pitch_mean, pitch_stddev = get_pitch_features(stats_features)
-        loudness_mean, loudness_stddev = get_loudness_features(stats_features)
-        jitter_mean, jitter_stddev = get_jitter_features(stats_features)
-        shimmer_mean, shimmer_stddev = get_shimmer_features(stats_features)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = get_other_features(stats_features)
+        pitch_mean, pitch_stddev = _get_pitch_features(stats_features)
+        loudness_mean, loudness_stddev = _get_loudness_features(stats_features)
+        jitter_mean, jitter_stddev = _get_jitter_features(stats_features)
+        shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
+        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
 
-        logger.info(f"Extracting openSMILE LLDs features from {igaku_audio_file}....")
         data_id = igaku_audio_file.split("/")[-2]
-        target = f"psy_c_{data_id}"
-        llds_features = smile_llds.process_file(igaku_audio_file)
-        save_llds(llds_features, input_data_dir, target)
+        target = get_igaku_target(data_id)
 
-        qa_result_df = add_results(
+        qa_result_df = _add_results(
             qa_result_df,
             target,
             pitch_mean,
