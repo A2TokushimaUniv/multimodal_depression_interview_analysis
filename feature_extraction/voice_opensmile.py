@@ -1,8 +1,7 @@
 import opensmile
-import glob
 import os
 from logzero import logger
-from utils import save_as_npy, get_riko_target, get_igaku_target
+from utils import save_feature, get_riko_target, get_igaku_target, get_voice_files
 import pandas as pd
 import librosa
 
@@ -34,60 +33,49 @@ column_names = {
 }
 
 
-def _get_pitch_features(features):
+def _get_pitch(feature):
     """
     ピッチ関連の特徴量を取得する
     """
-    pitch_mean = features["F0semitoneFrom27.5Hz_sma3nz_amean"].iloc[-1]
-    logger.info(f"PitchMean: {pitch_mean}")
-    pitch_stddev = features["F0semitoneFrom27.5Hz_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"PitchStddev: {pitch_stddev}")
+    pitch_mean = feature["F0semitoneFrom27.5Hz_sma3nz_amean"].iloc[-1]
+    pitch_stddev = feature["F0semitoneFrom27.5Hz_sma3nz_stddevNorm"].iloc[-1]
     return pitch_mean, pitch_stddev
 
 
-def _get_loudness_features(features):
+def _get_loudness(feature):
     """
     声の大きさ関連の特徴量を取得
     """
-    loudness_mean = features["loudness_sma3_amean"].iloc[-1]
-    logger.info(f"LoudnessMean: {loudness_mean}")
-    loudness_stddev = features["loudness_sma3_stddevNorm"].iloc[-1]
-    logger.info(f"LoudnessStddev: {loudness_stddev}")
+    loudness_mean = feature["loudness_sma3_amean"].iloc[-1]
+    loudness_stddev = feature["loudness_sma3_stddevNorm"].iloc[-1]
     return loudness_mean, loudness_stddev
 
 
-def _get_jitter_features(features):
+def _get_jitter(feature):
     """
     ジッター関連の特徴量を取得
     """
-    jitter_mean = features["jitterLocal_sma3nz_amean"].iloc[-1]
-    logger.info(f"JitterMean: {jitter_mean}")
-    jitter_stddev = features["jitterLocal_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"JitterStddev: {jitter_stddev}")
+    jitter_mean = feature["jitterLocal_sma3nz_amean"].iloc[-1]
+    jitter_stddev = feature["jitterLocal_sma3nz_stddevNorm"].iloc[-1]
     return jitter_mean, jitter_stddev
 
 
-def _get_shimmer_features(features):
+def _get_shimmer(feature):
     """
     shimmerr関連の特徴量を取得
     """
-    shimmer_mean = features["shimmerLocaldB_sma3nz_amean"].iloc[-1]
-    logger.info(f"ShimmerMean: {shimmer_mean}")
-    shimmer_stddev = features["shimmerLocaldB_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"ShimmerStddev: {shimmer_stddev}")
+    shimmer_mean = feature["shimmerLocaldB_sma3nz_amean"].iloc[-1]
+    shimmer_stddev = feature["shimmerLocaldB_sma3nz_stddevNorm"].iloc[-1]
     return shimmer_mean, shimmer_stddev
 
 
-def _get_other_features(features):
+def _get_others(feature):
     """
     その他の特徴量を取得
     """
-    HNRdBACF_sma3nz = features["HNRdBACF_sma3nz_amean"].iloc[-1]
-    logger.info(f"HNRdBACF_sma3nz: {HNRdBACF_sma3nz}")
-    F0semitone = features["F0semitoneFrom27.5Hz_sma3nz_pctlrange0-2"].iloc[-1]
-    logger.info(f"F0semitone: {F0semitone}")
-    F3frequency = features["F3frequency_sma3nz_stddevNorm"].iloc[-1]
-    logger.info(f"F3frequency: {F3frequency}")
+    HNRdBACF_sma3nz = feature["HNRdBACF_sma3nz_amean"].iloc[-1]
+    F0semitone = feature["F0semitoneFrom27.5Hz_sma3nz_pctlrange0-2"].iloc[-1]
+    F3frequency = feature["F3frequency_sma3nz_stddevNorm"].iloc[-1]
     return HNRdBACF_sma3nz, F0semitone, F3frequency
 
 
@@ -145,39 +133,13 @@ def _add_results(
     return qa_result_df
 
 
-def _save_feature(feature, output_dir, target):
-    """
-    LLDsを保存する
-    """
-    opensmile_dir = "opensmile"
-    os.makedirs(os.path.join(output_dir, opensmile_dir), exist_ok=True)
-    csv_file_path = os.path.join(output_dir, opensmile_dir, f"{target}.csv")
-    feature.to_csv(csv_file_path, index=False)
-    save_as_npy(csv_file_path, os.path.join(output_dir, f"{opensmile_dir}_npy"))
-
-
-def _get_audio_files(input_data_dir):
-    """
-    音声ファイルを取得する
-    """
-    riko_audio_files = glob.glob(
-        os.path.join(input_data_dir, "voice", "riko", "*", "audioNLP*.wav"),
-        recursive=True,
-    )
-    igaku_audio_files = glob.glob(
-        os.path.join(input_data_dir, "voice", "igaku", "*", "*_zoom_音声_被験者*.wav"),
-        recursive=True,
-    )
-    return riko_audio_files, igaku_audio_files
-
-
-def _get_mean_llds(audio_path):
+def _get_mean_lld(voice_path):
     """
     D-Vlogの元論文に記載されている方法でLLDを抽出する
     1秒毎にLLDsを抽出・平均化し、全てのLLDsを連結したものを特徴量とする
     frameStep, frameSizeの合わせ方は不明なので無視する
     """
-    y, sr = librosa.load(audio_path, sr=None)
+    y, sr = librosa.load(voice_path, sr=None)
     duration = int(librosa.get_duration(y=y, sr=sr))
 
     lld_data = []
@@ -194,27 +156,27 @@ def _get_mean_llds(audio_path):
         lld_data.append(lld_mean)
     lld_df = pd.DataFrame(lld_data)
     if duration != lld_df.shape[0]:
-        logger.warning(f"duration: {duration} != lld_df.shape[0]: {lld_df.shape[0]}")
+        logger.warning(f"duration: {duration} != lld feature column: {lld_df.shape[0]}")
     return lld_df
 
 
-def extract_opensmile_lld_features(input_data_dir):
+def extract_opensmile_lld_feature(input_data_dir):
     """
     音声からopenSMILEのLLD特徴量を抽出する
     """
-    riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
-    for riko_audio_file in riko_audio_files:
-        logger.info(f"Extracting openSMILE LLD features from {riko_audio_file}....")
-        features = _get_mean_llds(riko_audio_file)
-        data_id = riko_audio_file.split("/")[-2]
+    riko_voice_files, igaku_voice_files = get_voice_files(input_data_dir)
+    for riko_voice_file in riko_voice_files:
+        logger.info(f"Extracting openSMILE LLD feature from {riko_voice_file}....")
+        feature = _get_mean_lld(riko_voice_file)
+        data_id = riko_voice_file.split("/")[-2]
         target = get_riko_target(data_id)
-        _save_feature(features, input_data_dir, target)
-    for igaku_audio_file in igaku_audio_files:
-        logger.info(f"Extracting openSMILE LLD features from {igaku_audio_file}....")
-        features = _get_mean_llds(igaku_audio_file)
-        data_id = igaku_audio_file.split("/")[-2]
+        save_feature(feature, os.path.join(input_data_dir, "opensmile"), target)
+    for igaku_voice_file in igaku_voice_files:
+        logger.info(f"Extracting openSMILE LLD feature from {igaku_voice_file}....")
+        feature = _get_mean_lld(igaku_voice_file)
+        data_id = igaku_voice_file.split("/")[-2]
         target = get_igaku_target(data_id)
-        _save_feature(features, input_data_dir, target)
+        save_feature(feature, os.path.join(input_data_dir, "opensmile"), target)
     return
 
 
@@ -222,17 +184,17 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
     """
     音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
     """
-    riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
-    for riko_audio_file in riko_audio_files:
-        logger.info(f"Extracting openSMILE stats features from {riko_audio_file}....")
-        stats_features = smile_functions.process_file(riko_audio_file)
-        pitch_mean, pitch_stddev = _get_pitch_features(stats_features)
-        loudness_mean, loudness_stddev = _get_loudness_features(stats_features)
-        jitter_mean, jitter_stddev = _get_jitter_features(stats_features)
-        shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
+    riko_voice_files, igaku_voice_files = get_voice_files(input_data_dir)
+    for riko_voice_file in riko_voice_files:
+        logger.info(f"Extracting openSMILE stats feature from {riko_voice_file}....")
+        stats_feature = smile_functions.process_file(riko_voice_file)
+        pitch_mean, pitch_stddev = _get_pitch(stats_feature)
+        loudness_mean, loudness_stddev = _get_loudness(stats_feature)
+        jitter_mean, jitter_stddev = _get_jitter(stats_feature)
+        shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
+        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
 
-        data_id = riko_audio_file.split("/")[-2]
+        data_id = riko_voice_file.split("/")[-2]
         target = get_riko_target(data_id)
 
         qa_result_df = _add_results(
@@ -251,16 +213,16 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
             F3frequency,
         )
 
-    for igaku_audio_file in igaku_audio_files:
-        logger.info(f"Extracting openSMILE stats features from {igaku_audio_file}....")
-        stats_features = smile_functions.process_file(igaku_audio_file)
-        pitch_mean, pitch_stddev = _get_pitch_features(stats_features)
-        loudness_mean, loudness_stddev = _get_loudness_features(stats_features)
-        jitter_mean, jitter_stddev = _get_jitter_features(stats_features)
-        shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
+    for igaku_voice_file in igaku_voice_files:
+        logger.info(f"Extracting openSMILE stats feature from {igaku_voice_file}....")
+        stats_feature = smile_functions.process_file(igaku_voice_file)
+        pitch_mean, pitch_stddev = _get_pitch(stats_feature)
+        loudness_mean, loudness_stddev = _get_loudness(stats_feature)
+        jitter_mean, jitter_stddev = _get_jitter(stats_feature)
+        shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
+        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
 
-        data_id = igaku_audio_file.split("/")[-2]
+        data_id = igaku_voice_file.split("/")[-2]
         target = get_igaku_target(data_id)
 
         qa_result_df = _add_results(

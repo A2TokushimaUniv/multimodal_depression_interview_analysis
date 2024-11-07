@@ -6,16 +6,14 @@
 
 1. `pip install -r requirements.txt`で必要なライブラリをインストールする
 2. `python main.py`を実行する
-   - `--no_text`, `--no_face`, `--no_audio`を付けることで、必要ないモダリティの特徴量抽出をしないようにもできる
-   - 例えば、言語データの特徴量抽出のみを行いたい場合、`python main.py --no_face --no_audio`とすることで、言語特徴量のみを抽出する
+   - `--no_text`, `--no_video`, `--no_voice`を付けることで、必要ないモダリティの特徴量抽出をしないようにもできる
+   - 例えば、言語データの特徴量抽出のみを行いたい場合、`python main.py --no_vide --no_voice`とすることで、言語特徴量のみを抽出する
 
 ## 実行結果
 
 アンケートの集計結果（`input_qa_file`）にマルチモーダル特徴量に関する列を追加した CSV ファイル（`output_qa_file`）が生成されます。
 
-## 分析方法の詳細
-
-### 言語データ
+## 言語データ
 
 [東北大 日本語評価極性辞書(名詞編・用言編)](https://www.cl.ecei.tohoku.ac.jp/Open_Resources-Japanese_Sentiment_Polarity_Dictionary.html)を`sentiment_polarity/`に格納しています。
 
@@ -30,13 +28,21 @@
 - `Per_Pos_VerbAdj`,`Per_Neg_VerbAdj`: 被験者テキスト中の全用言のなかのポジティブ・ネガティブな用言の割合
 - `CharPerMinutes`, `WordPerMinutes`: 被験者が 1分間で発話した文字数・単語数
 
-### 音声データ
+## 音声データ
+
+### OpenSMILE
 
 音声データをOpenSMILEに入力し特徴量を得ています。特徴量セットには`eGeMAPSv02`を利用しています。
 
 それら特徴量のうち、声のピッチ・大きさ・揺らぎなど、鬱に関連していると思われる特徴量が被験者ごとにアンケートの集計結果に追加されます。これらの特徴量は後で追加することも可能です。
 
-### 動画データ
+### VGGish
+
+### Wav2Vec2.0
+
+## 動画データ
+
+### OpenFace
 
 OpenFaceを用いて顔表情の特徴量を抽出した後に、それらから各Action Unitの強さの平均値・標準偏差を計算しています。
 
@@ -49,3 +55,5 @@ OpenFaceを用いて顔表情の特徴量を抽出した後に、それらから
 2. `docker run -v .:/home/openface-build/counseling -it algebr/openface:latest`でこのリポジトリをマウントしたDockerイメージを起動する
 3. `cd counseling/feature_extraction`でリポジトリの特徴量抽出用のディレクトリに移動する
 4. `./openface.sh ../../build/bin/FeatureExtraction`でOpenFaceを実行する
+
+### Dlib
