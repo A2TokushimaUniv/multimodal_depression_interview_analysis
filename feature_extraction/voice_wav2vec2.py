@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from utils import save_feature, get_riko_target, get_igaku_target
 import librosa
 import torch
@@ -20,7 +21,6 @@ def _input_wav2vec2(voice_file):
     """
     ある音声ファイルのwav2vec2の特徴量を取得する
     """
-    logger.info(f"Extracting Wav2Vec2 features from {voice_file}....")
     # 入力音声は16kHzでサンプリングする必要がある
     input_audio, sample_rate = librosa.load(voice_file, sr=16000)
 
@@ -42,25 +42,19 @@ def _input_wav2vec2(voice_file):
     return o.last_hidden_state.squeeze(0)
 
 
-def _get_wav2vec2_features(voice_files, output_dir, target):
+def _get_wav2vec2_feature(voice_files):
     """
     ある被験者のwav2vec2の特徴量を取得する
     """
-    features = []
+    results = []
     for voice_file in voice_files:
         wav2vec2_feature = _input_wav2vec2(voice_file)
         if wav2vec2_feature is not None:
-            features.append(wav2vec2_feature)
-    concatenated_features = torch.cat(features, dim=0)
-    save_feature(
-        concatenated_features.cpu().numpy(),
-        os.path.join(output_dir, "wav2vec2"),
-        target,
-    )
-    return
+            results.append(wav2vec2_feature)
+    return torch.cat(results, dim=0)
 
 
-def extract_wav2vec2_features(input_data_dir):
+def extract_wav2vec2_feature(input_data_dir):
     riko_voice_dirs = os.listdir(os.path.join(input_data_dir, "voice", "riko"))
     for riko_voice_dir in riko_voice_dirs:
         target = get_riko_target(riko_voice_dir)
@@ -74,9 +68,18 @@ def extract_wav2vec2_features(input_data_dir):
         riko_voice_files.sort(
             key=lambda x: int(os.path.basename(x).split("_")[1].split(".")[0])
         )
-        _get_wav2vec2_features(riko_voice_files, input_data_dir, target)
+        logger.info(
+            f"Extracting Wav2Vec2 feature from voice files in voice/riko/{riko_voice_dir}...."
+        )
+        feature = _get_wav2vec2_feature(riko_voice_files)
+        save_feature(
+            pd.DataFrame(feature.detach().cpu().numpy()),
+            os.path.join(input_data_dir, "wav2vec2"),
+            target,
+        )
     igaku_voice_dirs = os.listdir(os.path.join(input_data_dir, "voice", "igaku"))
     for igaku_voice_dir in igaku_voice_dirs:
+        target = get_igaku_target(igaku_voice_dir)
         # 音声ファイルを一度に入力するとメモリが足りなくなるので、一発話ずつ入力する
         igaku_voice_files = glob.glob(
             os.path.join(
@@ -87,7 +90,13 @@ def extract_wav2vec2_features(input_data_dir):
         igaku_voice_files.sort(
             key=lambda x: int(os.path.basename(x).split("_")[1].split(".")[0])
         )
-        _get_wav2vec2_features(
-            igaku_voice_files, input_data_dir, get_igaku_target(igaku_voice_dir)
+        logger.info(
+            f"Extracting Wav2Vec2 feature from voice files in voice/riko/{igaku_voice_dir}...."
+        )
+        feature = _get_wav2vec2_feature(igaku_voice_files)
+        save_feature(
+            pd.DataFrame(feature.detach().cpu().numpy()),
+            os.path.join(input_data_dir, "wav2vec2"),
+            target,
         )
     return

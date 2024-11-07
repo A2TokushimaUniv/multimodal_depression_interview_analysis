@@ -1,10 +1,9 @@
-import glob
 import os
 from logzero import logger
 import pandas as pd
 import spacy
 from collections import Counter
-from utils import get_riko_target, get_igaku_target
+from utils import get_riko_target, get_igaku_target, get_text_files
 
 nlp = spacy.load("ja_ginza_electra")
 
@@ -287,14 +286,7 @@ def analyze_text(qa_result_df, input_data_dir):
     """
     GiNZAと極性辞書を使ってテキストを分析する
     """
-    riko_text_files = glob.glob(
-        os.path.join(input_data_dir, "text", "riko", "*", "*.csv"),
-        recursive=True,
-    )
-    igaku_text_files = glob.glob(
-        os.path.join(input_data_dir, "text", "igaku", "*", "*.csv"),
-        recursive=True,
-    )
+    riko_text_files, igaku_text_files = get_text_files(input_data_dir)
     nouns_file = "./sentiment_polarity/名詞.tsv"
     verb_adj_file = "./sentiment_polarity/用言.tsv"
     negative_nouns = _get_negative_nouns(nouns_file)
