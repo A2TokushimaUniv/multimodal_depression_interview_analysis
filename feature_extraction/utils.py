@@ -57,11 +57,11 @@ def get_video_files(input_data_dir):
     動画ファイルを取得する
     """
     riko_video_files = glob.glob(
-        os.path.join(input_data_dir, "video", "riko", "*", "*.mp4"),
+        os.path.join(input_data_dir, "video", "riko", "*", "*-video*.mp4"),
         recursive=True,
     )
     igaku_video_files = glob.glob(
-        os.path.join(input_data_dir, "video", "igaku", "*", "*.mp4"),
+        os.path.join(input_data_dir, "video", "igaku", "*", "*_zoom_映像・音声*.mp4"),
         recursive=True,
     )
     return riko_video_files, igaku_video_files
@@ -69,14 +69,14 @@ def get_video_files(input_data_dir):
 
 def get_text_files(input_data_dir):
     """
-    動画ファイルを取得する
+    テキストファイルを取得する
     """
     riko_text_files = glob.glob(
-        os.path.join(input_data_dir, "text", "riko", "*", "*.txt"),
+        os.path.join(input_data_dir, "text", "riko", "*", "*.csv"),
         recursive=True,
     )
     igaku_text_files = glob.glob(
-        os.path.join(input_data_dir, "text", "igaku", "*", "*.txt"),
+        os.path.join(input_data_dir, "text", "igaku", "*", "*.csv"),
         recursive=True,
     )
     return riko_text_files, igaku_text_files

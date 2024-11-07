@@ -156,7 +156,7 @@ def _get_mean_lld(voice_path):
         lld_data.append(lld_mean)
     lld_df = pd.DataFrame(lld_data)
     if duration != lld_df.shape[0]:
-        logger.warning(f"duration: {duration} != lld_df.shape[0]: {lld_df.shape[0]}")
+        logger.warning(f"duration: {duration} != lld feature column: {lld_df.shape[0]}")
     return lld_df
 
 
