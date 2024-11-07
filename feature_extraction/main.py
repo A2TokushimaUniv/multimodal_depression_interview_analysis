@@ -1,6 +1,6 @@
 import pandas as pd
 
-from audio_opensmile import analyze_opensmile_stats
+from audio_opensmile import analyze_opensmile_stats, extract_opensmile_lld_features
 from audio_wav2vec2 import extract_wav2vec2_features
 from audio_vggish import extract_vggish_features
 from video_openface import analyze_openface_stats
@@ -19,7 +19,7 @@ def main(input_qa_file, input_data_dir, output_qa_file, no_text, no_face, no_aud
         # extract_dlib_features(input_data_dir)
     if not no_audio:
         qa_result_df = analyze_opensmile_stats(qa_result_df, input_data_dir)
-        # extract_opensmile_lld_features(input_data_dir)
+        extract_opensmile_lld_features(input_data_dir)
         extract_wav2vec2_features(input_data_dir)
         extract_vggish_features(input_data_dir)
     qa_result_df.to_csv(output_qa_file, index=False)

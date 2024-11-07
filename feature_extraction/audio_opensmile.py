@@ -3,6 +3,8 @@ import glob
 import os
 from logzero import logger
 from utils import save_as_npy, get_riko_target, get_igaku_target
+import pandas as pd
+import librosa
 
 """
 OpenSMILEの設定、特徴量セットにはeGeMAPSv02を使用
@@ -155,6 +157,9 @@ def _save_feature(feature, output_dir, target):
 
 
 def _get_audio_files(input_data_dir):
+    """
+    音声ファイルを取得する
+    """
     riko_audio_files = glob.glob(
         os.path.join(input_data_dir, "voice", "riko", "*", "audioNLP*.wav"),
         recursive=True,
@@ -166,14 +171,56 @@ def _get_audio_files(input_data_dir):
     return riko_audio_files, igaku_audio_files
 
 
+def _get_mean_llds(audio_path):
+    """
+    D-Vlogの元論文に記載されている方法でLLDを抽出する
+    1秒毎にLLDsを抽出・平均化し、全てのLLDsを連結したものを特徴量とする
+    frameStep, frameSizeの合わせ方は不明なので無視する
+    """
+    y, sr = librosa.load(audio_path, sr=None)
+    duration = int(librosa.get_duration(y=y, sr=sr))
+
+    lld_data = []
+    # 1秒ごとに音声を処理する
+    for i in range(duration):
+        start_sample = int(i * sr)
+        end_sample = int((i + 1) * sr)
+        y_segment = y[start_sample:end_sample]
+        # 音声セグメントが1秒に満たない場合はループを終了
+        if len(y_segment) < sr:
+            break
+        lld_result = smile_llds.process_signal(y_segment, sampling_rate=sr)
+        lld_mean = lld_result.mean(axis=0)
+        lld_data.append(lld_mean)
+    lld_df = pd.DataFrame(lld_data)
+    if duration != lld_df.shape[0]:
+        logger.warning(f"duration: {duration} != lld_df.shape[0]: {lld_df.shape[0]}")
+    return lld_df
+
+
 def extract_opensmile_lld_features(input_data_dir):
+    """
+    音声からopenSMILEのLLD特徴量を抽出する
+    """
     riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
+    for riko_audio_file in riko_audio_files:
+        logger.info(f"Extracting openSMILE LLD features from {riko_audio_file}....")
+        features = _get_mean_llds(riko_audio_file)
+        data_id = riko_audio_file.split("/")[-2]
+        target = get_riko_target(data_id)
+        _save_feature(features, input_data_dir, target)
+    for igaku_audio_file in igaku_audio_files:
+        logger.info(f"Extracting openSMILE LLD features from {igaku_audio_file}....")
+        features = _get_mean_llds(igaku_audio_file)
+        data_id = igaku_audio_file.split("/")[-2]
+        target = get_igaku_target(data_id)
+        _save_feature(features, input_data_dir, target)
     return
 
 
 def analyze_opensmile_stats(qa_result_df, input_data_dir):
     """
-    音声をOpenSMILEで特徴量抽出する
+    音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
     """
     riko_audio_files, igaku_audio_files = _get_audio_files(input_data_dir)
     for riko_audio_file in riko_audio_files:
@@ -185,12 +232,8 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
         shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
         HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
 
-        logger.info(f"Extracting openSMILE LLDs features from {riko_audio_file}....")
         data_id = riko_audio_file.split("/")[-2]
         target = get_riko_target(data_id)
-        # # TODO: 1秒毎にLLDを抽出して平均して連結する
-        # llds_features = smile_llds.process_file(riko_audio_file)
-        # _save_feature(llds_features, input_data_dir, target)
 
         qa_result_df = _add_results(
             qa_result_df,
@@ -217,11 +260,8 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
         shimmer_mean, shimmer_stddev = _get_shimmer_features(stats_features)
         HNRdBACF_sma3nz, F0semitone, F3frequency = _get_other_features(stats_features)
 
-        logger.info(f"Extracting openSMILE LLDs features from {igaku_audio_file}....")
         data_id = igaku_audio_file.split("/")[-2]
         target = get_igaku_target(data_id)
-        # llds_features = smile_llds.process_file(igaku_audio_file)
-        # _save_feature(llds_features, input_data_dir, target)
 
         qa_result_df = _add_results(
             qa_result_df,
