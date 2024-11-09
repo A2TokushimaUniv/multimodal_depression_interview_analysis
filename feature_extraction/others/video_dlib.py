@@ -60,7 +60,7 @@ def _get_dlib_feature(video_path, detector, predictor):
         ret, frame = cap.read()
         if not ret:
             break
-        # 1 FPSごとの処理を行う
+        # 1秒ごとの処理を行う
         if frame_count % fps == 0:
             # フレームをグレースケールに変換
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)

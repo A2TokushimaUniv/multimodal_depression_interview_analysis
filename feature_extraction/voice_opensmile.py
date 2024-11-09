@@ -16,6 +16,7 @@ smile_functions = opensmile.Smile(
 smile_llds = opensmile.Smile(
     feature_set=opensmile.FeatureSet.eGeMAPSv02,
     feature_level=opensmile.FeatureLevel.LowLevelDescriptors,  # LLDを計算する
+    sampling_rate=16000,  # VGGishと合わせてサンプリングレートは16kHzにする
 )
 
 column_names = {
