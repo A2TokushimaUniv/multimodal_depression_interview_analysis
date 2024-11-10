@@ -25,19 +25,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_qa_file",
-        default="../data/preprocessed_data/qa/qa_result.csv",
+        default="../data/preprocessed/qa/qa_result.csv",
         type=str,
         help="Path to the input file",
     )
     parser.add_argument(
         "--input_data_dir",
-        default="../data/preprocessed_data",
+        default="../data/preprocessed",
         type=str,
         help="Path to the input data directory",
     )
     parser.add_argument(
         "--output_qa_file",
-        default="../data/preprocessed_data/qa/qa_result_features.csv",
+        default="../data/preprocessed/qa/qa_result_features.csv",
         type=str,
         help="Path to the output file",
     )

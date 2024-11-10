@@ -242,18 +242,18 @@ def main(before_qa_file, after_qa_file, output_file):
 
 
 if __name__ == "__main__":
-    os.makedirs("../../data/preprocessed_data/qa", exist_ok=True)
-    riko_before_qa_file = "../../data/raw_data/qa/riko/riko_before_clean.csv"
-    riko_after_qa_file = "../../data/raw_data/qa/riko/riko_after.csv"
-    riko_output_file = "../../data/preprocessed_data/qa/riko_qa_result.csv"
+    os.makedirs("../../data/preprocessed/qa", exist_ok=True)
+    riko_before_qa_file = "../../data/raw/qa/riko/riko_before_clean.csv"
+    riko_after_qa_file = "../../data/raw/qa/riko/riko_after.csv"
+    riko_output_file = "../../data/preprocessed/qa/riko_qa_result.csv"
     logger.info("Input Before QA file: {}".format(riko_before_qa_file))
     logger.info("input After QA file: {}".format(riko_after_qa_file))
     logger.info("Output file: {}".format(riko_output_file))
     main(riko_before_qa_file, riko_after_qa_file, riko_output_file)
 
-    igaku_before_qa_file = "../../data/raw_data/qa/igaku/igaku_before.csv"
-    igaku_after_qa_file = "../../data/raw_data/qa/igaku/igaku_after.csv"
-    igaku_output_file = "../../data/preprocessed_data/qa/igaku_qa_result.csv"
+    igaku_before_qa_file = "../../data/rawqa/igaku/igaku_before.csv"
+    igaku_after_qa_file = "../../data/raw/qa/igaku/igaku_after.csv"
+    igaku_output_file = "../../data/preprocessed/qa/igaku_qa_result.csv"
     logger.info("Input Before QA file: {}".format(igaku_before_qa_file))
     logger.info("input After QA file: {}".format(igaku_after_qa_file))
     logger.info("Output file: {}".format(igaku_output_file))

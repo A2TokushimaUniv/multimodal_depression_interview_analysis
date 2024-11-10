@@ -223,12 +223,12 @@ if __name__ == "__main__":
         "--input_data_dir",
         help="Path to input data directory",
         type=str,
-        default="../data/raw_data",
+        default="../data/raw",
     )
 
     parser.add_argument(
         "--output_dir",
-        default="../data/preprocessed_data",
+        default="../data/preprocessed",
         help="Path to output directory",
     )
 

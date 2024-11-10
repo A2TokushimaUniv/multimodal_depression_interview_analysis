@@ -7,6 +7,7 @@ from transformers import Wav2Vec2FeatureExtractor, Wav2Vec2Model
 import glob
 import os
 from logzero import logger
+from typing_extensions import deprecated
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -17,6 +18,7 @@ model = Wav2Vec2Model.from_pretrained(MODEL_NAME).to(device)
 model.eval()
 
 
+@deprecated("wav2vec2.0は分析やモデル学習に使っていない")
 def _input_wav2vec2(voice_file):
     """
     ある音声ファイルのwav2vec2の特徴量を取得する
@@ -42,6 +44,7 @@ def _input_wav2vec2(voice_file):
     return o.last_hidden_state.squeeze(0)
 
 
+@deprecated("wav2vec2.0は分析やモデル学習に使っていない")
 def _get_wav2vec2_feature(voice_files):
     """
     ある被験者のwav2vec2の特徴量を取得する
@@ -54,6 +57,7 @@ def _get_wav2vec2_feature(voice_files):
     return torch.cat(results, dim=0)
 
 
+@deprecated("wav2vec2.0は分析やモデル学習に使っていない")
 def extract_wav2vec2_feature(input_data_dir):
     riko_voice_dirs = os.listdir(os.path.join(input_data_dir, "voice", "riko"))
     for riko_voice_dir in riko_voice_dirs:

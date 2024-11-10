@@ -16,8 +16,8 @@
 
 ### 実行手順
 
-1. `../data/raw_data/video/<igaku> or <riko>/{1..}/.mp4`の形式でデータを格納する
-2. `../data/raw_data/voice/<igaku> or <riko>/{1..}/.m4a`の形式でデータを格納する
+1. `../data/raw/video/<igaku> or <riko>/{1..}/.mp4`の形式でデータを格納する
+2. `../data/raw/voice/<igaku> or <riko>/{1..}/.m4a`の形式でデータを格納する
 3. `python main.py`を実行する
 
 ### 実行結果
@@ -34,7 +34,7 @@
 
 ### 実行手順
 
-1. `../data/raw_data/<igaku> or <riko>/.csv`の形式でデータを格納する
+1. `../data/raw/<igaku> or <riko>/.csv`の形式でデータを格納する
 2. `qa/clean_riko_before.py`を実行して理工アンケートを整形する
 3. `qa/convert_qa.py`を実行して、アンケート項目をまとめて数値に変換したデータ（`<igaku> or <riko>_qa_result.csv`）を生成する
 4. `qa/concat_qa.py`を実行して、rikoとigakuのアンケートと連結した`qa_result.csv`を生成する
