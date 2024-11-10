@@ -2,7 +2,7 @@ import glob
 import os
 
 
-def find_audio_files(input_data_dir):
+def get_voice_files(input_data_dir):
     patterns = [
         os.path.join(
             input_data_dir, "*", "audioNLPTarou*.m4a"
@@ -22,7 +22,7 @@ def find_audio_files(input_data_dir):
     return result
 
 
-def find_video_files(input_data_dir):
+def get_video_files(input_data_dir):
     pattern = os.path.join(input_data_dir, "*", "*.mp4")
     file_paths = glob.glob(pattern, recursive=True)
     result = []

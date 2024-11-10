@@ -7,7 +7,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
 from reazonspeech.nemo.asr import transcribe, audio_from_path
 from reazonspeech.nemo.asr import load_model
-from utils import find_audio_files, find_video_files
+from utils import get_voice_files, get_video_files
 
 # ReazonSpeech model for Speech-to-Text
 # See: https://huggingface.co/reazon-research/reazonspeech-nemo-v2
@@ -22,7 +22,7 @@ def _get_subject_segments(audio, min_silence_len=1000, silence_thresh=-50):
     # 音のある区間を抽出する
     nonsilent_segments = detect_nonsilent(
         audio,
-        # NOTE: 以下のパラメータによって出力されるテキストの長さが変わる
+        # 以下のパラメータによって出力されるテキストの長さが変わる
         min_silence_len=min_silence_len,  # min_silence_len ミリ秒以上無音なら区間を抽出
         silence_thresh=silence_thresh,  # slice_thresh dBFS以下で無音とみなす
     )
@@ -36,14 +36,14 @@ def _get_subject_segments(audio, min_silence_len=1000, silence_thresh=-50):
     return subject_segments
 
 
-def _get_subject_text_list(audio_file_path, start, end):
+def _get_subject_text_list(voice_file_path, start, end):
     """
     発話開始秒, 発話終了秒, 発話テキスト からなるCSV行を生成する
     """
-    audio = audio_from_path(audio_file_path)
+    audio = audio_from_path(voice_file_path)
     try:
         logger.info(
-            f"Transcribing segment from {start} ms to {end} ms in {audio_file_path}..."
+            f"Transcribing segment from {start} ms to {end} ms in {voice_file_path}..."
         )
         result = transcribe(REAZON_MODEL, audio)
     except Exception as e:
@@ -55,23 +55,23 @@ def _get_subject_text_list(audio_file_path, start, end):
     return None
 
 
-def _get_subject_audio_text(
-    audio, subject_segments, audio_output_file_path, text_output_file_path
+def _get_subject_voice_text(
+    audio, subject_segments, voice_output_file_path, text_output_file_path
 ):
     """
     音のある区間（被験者の区間）だけ音声データを抜き出す
     """
-    subject_audio_sum = AudioSegment.empty()
+    subject_voice_sum = AudioSegment.empty()
     subject_text_list = []
     logger.info("Extracting subject audio and text...")
     utterance_count = 1
     for start, end in subject_segments:
-        subject_audio_sum += audio[start:end]
-        subject_audio = AudioSegment.empty()
-        subject_audio += audio[start:end]
+        subject_voice_sum += audio[start:end]
+        subject_voice = AudioSegment.empty()
+        subject_voice += audio[start:end]
         tmp_utterance_path = f"./tmp_utterance_{utterance_count}.wav"
-        # 発話ごとに音声を保存
-        subject_audio.export(tmp_utterance_path, format="wav")
+        # 発話ごとに音声を一時的に保存
+        subject_voice.export(tmp_utterance_path, format="wav")
         # 発話ごとのテキストを抽出
         text_list = _get_subject_text_list(tmp_utterance_path, start, end)
         if text_list:
@@ -79,8 +79,8 @@ def _get_subject_audio_text(
         utterance_count += 1
         os.remove(tmp_utterance_path)
     # 被験者の区間のみの音声データを保存
-    subject_audio_sum.export(audio_output_file_path, format="wav")
-    logger.info(f"Successfully get subject audio at {audio_output_file_path}!")
+    subject_voice_sum.export(voice_output_file_path, format="wav")
+    logger.info(f"Successfully get subject audio at {voice_output_file_path}!")
     # 被験者の発話テキストを保存
     with open(text_output_file_path, mode="w", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -116,23 +116,24 @@ def _get_subject_video(video_file, subject_segments, video_output_file_path):
     return
 
 
-def _preprocess(video_file_path, audio_file_path, save_dir):
+def _preprocess(video_file_path, voice_file_path, save_dir):
     """
     前処理を行う
     """
+    logger.info(f"Start preprocessing from {video_file_path} and {voice_file_path}...")
     # pydubで音声ファイルを開く
-    audio = AudioSegment.from_file(audio_file_path)
+    audio = AudioSegment.from_file(voice_file_path)
     # 音声データから被験者が喋っている区間のミリ秒を取得する
     subject_segments = _get_subject_segments(audio)
 
-    audio_output_file_name = os.path.splitext(os.path.basename(audio_file_path))[0]
-    audio_output_file_path = os.path.join(save_dir, f"{audio_output_file_name}.wav")
-    text_output_file_path = os.path.join(save_dir, f"{audio_output_file_name}.csv")
+    voice_output_file_name = os.path.splitext(os.path.basename(voice_file_path))[0]
+    voice_output_file_path = os.path.join(save_dir, f"{voice_output_file_name}.wav")
+    text_output_file_path = os.path.join(save_dir, f"{voice_output_file_name}.csv")
     # subject_segmentsを利用して音声データから被験者の音声と発話テキストを抜き出す
-    _get_subject_audio_text(
+    _get_subject_voice_text(
         audio,
         subject_segments,
-        audio_output_file_path,
+        voice_output_file_path,
         text_output_file_path,
     )
 
@@ -147,28 +148,35 @@ def main(input_data_dir, output_data_dir):
     logger.info("Start preprocessing...")
     os.makedirs(output_data_dir, exist_ok=True)
 
-    audio_files = find_audio_files(input_data_dir)
-    video_files = find_video_files(input_data_dir)
+    voice_files = get_voice_files(input_data_dir)
+    video_files = get_video_files(input_data_dir)
 
-    if len(audio_files) != len(video_files):
+    if len(voice_files) != len(video_files):
         logger.error(
-            f"audio_files: {len(audio_files)} != video_files: {len(video_files)}"
+            f"voice_files: {len(voice_files)} != video_files: {len(video_files)}"
         )
-        raise ValueError("audio_filesとvideo_filesの数が一致しません")
+        raise ValueError("voice_filesとvideo_filesの数が一致しません")
 
-    for audio_data_id, audio_file_path, video_data_id, video_file_path in zip(
-        audio_files, video_files
-    ):
-        if audio_data_id != video_data_id:
+    for voice_file, video_file in zip(voice_files, video_files):
+        voice_data_id = voice_file[0]
+        voice_file_path = voice_file[1]
+        video_data_id = video_file[0]
+        video_file_path = video_file[1]
+        logger.info(f"voice_data_id: {voice_data_id}")
+        logger.info(f"video_data_id: {video_data_id}")
+        logger.info(f"voice_file_path: {voice_file_path}")
+        logger.info(f"video_file_path: {video_file_path}")
+
+        if voice_data_id != video_data_id:
             logger.error(
-                f"audio_data_id: {audio_data_id} != video_data_id: {video_data_id}"
+                f"voice_data_id: {voice_data_id} != video_data_id: {video_data_id}"
             )
-            raise ValueError("audio_data_idとvideo_data_idが一致しません")
+            raise ValueError("voice_data_idとvideo_data_idが一致しません")
 
-        data_id = audio_data_id
+        data_id = voice_data_id
         save_dir = os.path.join(output_data_dir, data_id)
         os.makedirs(save_dir, exist_ok=True)
-        _preprocess(video_file_path, audio_file_path, save_dir)
+        _preprocess(video_file_path, voice_file_path, save_dir)
     logger.info("Finished preprocessing!")
 
 

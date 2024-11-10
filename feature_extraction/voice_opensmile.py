@@ -16,7 +16,6 @@ smile_functions = opensmile.Smile(
 smile_llds = opensmile.Smile(
     feature_set=opensmile.FeatureSet.eGeMAPSv02,
     feature_level=opensmile.FeatureLevel.LowLevelDescriptors,  # LLDを計算する
-    sampling_rate=16000,  # VGGishと合わせてサンプリングレートは16kHzにする
 )
 
 column_names = {
@@ -134,7 +133,7 @@ def _add_results(
     return qa_result_df
 
 
-def _get_mean_lld(voice_path):
+def _get_lld(voice_path):
     """
     D-Vlogの元論文に記載されている方法でLLDを抽出する
     1秒毎にLLDsを抽出・平均化し、全てのLLDsを連結したものを特徴量とする
@@ -161,24 +160,19 @@ def _get_mean_lld(voice_path):
     return lld_df
 
 
-def extract_opensmile_lld_feature(input_data_dir):
+def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
     """
     音声からopenSMILEのLLD特徴量を抽出する
     """
-    riko_voice_files, igaku_voice_files = get_voice_files(input_data_dir)
-    for riko_voice_file in riko_voice_files:
-        logger.info(f"Extracting openSMILE LLD feature from {riko_voice_file}....")
-        feature = _get_mean_lld(riko_voice_file)
-        data_id = riko_voice_file.split("/")[-2]
-        target = get_riko_target(data_id)
-        save_feature(feature, os.path.join(input_data_dir, "opensmile"), target)
-    for igaku_voice_file in igaku_voice_files:
-        logger.info(f"Extracting openSMILE LLD feature from {igaku_voice_file}....")
-        feature = _get_mean_lld(igaku_voice_file)
-        data_id = igaku_voice_file.split("/")[-2]
-        target = get_igaku_target(data_id)
-        save_feature(feature, os.path.join(input_data_dir, "opensmile"), target)
-    return
+    voice_files = get_voice_files(input_data_dir)
+    for data_id, voice_file in voice_files:
+        logger.info(f"Extracting openSMILE LLD feature from {voice_file}....")
+        feature = _get_lld(voice_file)
+        save_feature(
+            feature,
+            os.path.join(output_data_dir, "opensmile", data_id),
+            os.path.basename(os.path.splitext(voice_file)[0]) + ".csv"
+        )
 
 
 def analyze_opensmile_stats(qa_result_df, input_data_dir):

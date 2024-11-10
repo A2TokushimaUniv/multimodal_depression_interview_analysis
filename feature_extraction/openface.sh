@@ -1,20 +1,17 @@
 #!/bin/bash
 
 openface_feature_extraction_path=$1
-riko_video_dir="../data/preprocessed/video/riko"
-igaku_video_dir="../data/preprocessed/video/igaku"
+video_dir="../data/preprocessed/"
 
-riko_movie_files=$(find "$riko_video_dir" -maxdepth 3 -type f -name "*-video*.mp4" | sort)
-riko_movie_files_array=($riko_movie_files)
-riko_file_count=${#riko_movie_files_array[@]}
-igaku_movie_files=$(find "$igaku_video_dir" -maxdepth 3 -type f -name "*_zoom_映像・音声*.mp4" | sort)
-igaku_movie_files_array=($igaku_movie_files)
-igaku_file_count=${#igaku_movie_files_array[@]}
+movie_files=$(find "$video_dir" -maxdepth 3 -type f -name "*.mp4" | sort)
+movie_files_array=($movie_files)
+file_count=${#movie_files_array[@]}
 
-for (( i=0; i<$riko_file_count; i++ )); do
-  "$openface_feature_extraction_path" -f "${riko_movie_files_array[$i]}" -out_dir ../data/preprocessed/openface
+for (( i=0; i<$file_count; i++ )); do
+  echo "進行状況: (${i+1}/${file_count}) 処理中のファイル: ${movie_files_array[$i]}"
+  # Facial LandmarkとAction Unitのみを抽出する
+  # 出力ファイル名は指定できないので、出力後に<ID名>.csvとなるように手動で修正する
+  "$openface_feature_extraction_path" -f "${movie_files_array[$i]}" -out_dir ../data/feature/openface -2Dfp -aus
 done
 
-for (( i=0; i<$igaku_file_count; i++ )); do
-  "$openface_feature_extraction_path" -f "${igaku_movie_files_array[$i]}" -out_dir ../data/preprocessed/openface
-done
+echo "全ての処理が完了しました。"
