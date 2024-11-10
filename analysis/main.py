@@ -153,7 +153,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_file",
-        default="../data/preprocessed/qa/qa_result_features.csv",
+        default="../data/qa/qa_result_features.csv",
         help="Input file path",
         type=str,
     )
