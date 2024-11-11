@@ -19,7 +19,7 @@ def extract_vggish_feature(input_data_dir, output_data_dir):
         feature = model.forward(voice_file)
         save_feature(
             pd.DataFrame(feature.detach().cpu().numpy()),
-            os.path.join(output_data_dir, "vggish", data_id),
-            os.path.basename(os.path.splitext(voice_file)[0]) + ".csv"
+            os.path.join(output_data_dir, "vggish"),
+            f"{data_id}.csv",
         )
     return

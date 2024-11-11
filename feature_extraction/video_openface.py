@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from logzero import logger
-from utils import save_as_npy, get_openface_files
+from utils import get_openface_files
 
 
 def _get_results(csv_file, qa_result_df):
@@ -45,8 +45,6 @@ def analyze_openface_stats(qa_result_df, input_data_dir):
     OpenFaceの特徴量を使って統計量を計算する
     """
     openface_files = get_openface_files(input_data_dir)
-    # TODO: save_as_npyをプライベートにする
     for openface_file in openface_files:
-        save_as_npy(openface_file, os.path.join(input_data_dir, "openface_npy"))
         qa_result_df = _get_results(openface_file, qa_result_df)
     return qa_result_df

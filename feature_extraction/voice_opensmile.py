@@ -1,7 +1,7 @@
 import opensmile
 import os
 from logzero import logger
-from utils import save_feature, get_riko_target, get_igaku_target, get_voice_files
+from utils import save_feature, get_voice_files
 import pandas as pd
 import librosa
 
@@ -133,6 +133,40 @@ def _add_results(
     return qa_result_df
 
 
+def analyze_opensmile_stats(qa_result_df, input_data_dir):
+    """
+    音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
+    """
+    voice_files = get_voice_files(input_data_dir)
+
+    for data_id, voice_file in voice_files:
+        logger.info(f"Extracting openSMILE stats feature from {voice_file}....")
+        stats_feature = smile_functions.process_file(voice_file)
+        pitch_mean, pitch_stddev = _get_pitch(stats_feature)
+        loudness_mean, loudness_stddev = _get_loudness(stats_feature)
+        jitter_mean, jitter_stddev = _get_jitter(stats_feature)
+        shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
+        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
+
+        qa_result_df = _add_results(
+            qa_result_df,
+            data_id,
+            pitch_mean,
+            pitch_stddev,
+            loudness_mean,
+            loudness_stddev,
+            jitter_mean,
+            jitter_stddev,
+            shimmer_mean,
+            shimmer_stddev,
+            HNRdBACF_sma3nz,
+            F0semitone,
+            F3frequency,
+        )
+
+    return qa_result_df
+
+
 def _get_lld(voice_path):
     """
     D-Vlogの元論文に記載されている方法でLLDを抽出する
@@ -170,70 +204,6 @@ def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
         feature = _get_lld(voice_file)
         save_feature(
             feature,
-            os.path.join(output_data_dir, "opensmile", data_id),
-            os.path.basename(os.path.splitext(voice_file)[0]) + ".csv"
+            os.path.join(output_data_dir, "opensmile"),
+            f"{data_id}.csv",
         )
-
-
-def analyze_opensmile_stats(qa_result_df, input_data_dir):
-    """
-    音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
-    """
-    riko_voice_files, igaku_voice_files = get_voice_files(input_data_dir)
-    for riko_voice_file in riko_voice_files:
-        logger.info(f"Extracting openSMILE stats feature from {riko_voice_file}....")
-        stats_feature = smile_functions.process_file(riko_voice_file)
-        pitch_mean, pitch_stddev = _get_pitch(stats_feature)
-        loudness_mean, loudness_stddev = _get_loudness(stats_feature)
-        jitter_mean, jitter_stddev = _get_jitter(stats_feature)
-        shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
-
-        data_id = riko_voice_file.split("/")[-2]
-        target = get_riko_target(data_id)
-
-        qa_result_df = _add_results(
-            qa_result_df,
-            target,
-            pitch_mean,
-            pitch_stddev,
-            loudness_mean,
-            loudness_stddev,
-            jitter_mean,
-            jitter_stddev,
-            shimmer_mean,
-            shimmer_stddev,
-            HNRdBACF_sma3nz,
-            F0semitone,
-            F3frequency,
-        )
-
-    for igaku_voice_file in igaku_voice_files:
-        logger.info(f"Extracting openSMILE stats feature from {igaku_voice_file}....")
-        stats_feature = smile_functions.process_file(igaku_voice_file)
-        pitch_mean, pitch_stddev = _get_pitch(stats_feature)
-        loudness_mean, loudness_stddev = _get_loudness(stats_feature)
-        jitter_mean, jitter_stddev = _get_jitter(stats_feature)
-        shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
-        HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
-
-        data_id = igaku_voice_file.split("/")[-2]
-        target = get_igaku_target(data_id)
-
-        qa_result_df = _add_results(
-            qa_result_df,
-            target,
-            pitch_mean,
-            pitch_stddev,
-            loudness_mean,
-            loudness_stddev,
-            jitter_mean,
-            jitter_stddev,
-            shimmer_mean,
-            shimmer_stddev,
-            HNRdBACF_sma3nz,
-            F0semitone,
-            F3frequency,
-        )
-
-    return qa_result_df

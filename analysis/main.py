@@ -132,8 +132,8 @@ def calculate_statistics(output_dir, df):
     results.to_csv(os.path.join(output_dir, "column_statistics.csv"), index=True)
 
 
-def main(input_file, output_dir, threshold):
-    df = pd.read_csv(input_file)
+def main(input_file_path, output_dir, threshold):
+    df = pd.read_csv(input_file_path)
 
     logger.info("Calculating correlation matrix...")
     columns_to_exclude = [
@@ -152,7 +152,7 @@ def main(input_file, output_dir, threshold):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_file",
+        "--input_file_path",
         default="../data/qa/qa_result_features.csv",
         help="Input file path",
         type=str,
@@ -167,10 +167,10 @@ if __name__ == "__main__":
         "--threshold", default=0.3, help="Correlation threshold", type=float
     )
     args = parser.parse_args()
-    input_file = args.input_file
+    input_file_path = args.input_file_path
     output_dir = args.output_dir
     threshold = args.threshold
-    logger.info(f"Input file: {input_file}")
+    logger.info(f"Input file: {input_file_path}")
     logger.info(f"Output directory: {output_dir}")
     logger.info(f"Threshold: {threshold}")
-    main(input_file, output_dir, threshold)
+    main(input_file_path, output_dir, threshold)

@@ -4,7 +4,7 @@ import glob
 import pandas as pd
 
 
-def save_as_npy(csv_file_path, output_dir):
+def _save_as_npy(csv_file_path, output_dir):
     """
     CSVファイルを.npyファイル（numpy形式）に変換する
     """
@@ -21,20 +21,7 @@ def save_feature(feature: pd.DataFrame, output_dir, output_file_name):
     os.makedirs(output_dir, exist_ok=True)
     csv_file_path = os.path.join(output_dir, output_file_name)
     feature.to_csv(csv_file_path, index=False)
-    save_as_npy(csv_file_path, output_dir)
-
-
-def get_riko_target(data_id):
-    if int(data_id) < 10:
-        target = f"riko0{data_id}"
-    else:
-        target = f"riko{data_id}"
-    return target
-
-
-def get_igaku_target(data_id):
-    target = f"psy_c_{data_id}"
-    return target
+    _save_as_npy(csv_file_path, output_dir)
 
 
 def get_voice_files(input_data_dir):

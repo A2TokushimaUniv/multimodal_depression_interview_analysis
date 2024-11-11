@@ -1,5 +1,10 @@
-from voice_opensmile import extract_opensmile_lld_feature
+from voice_opensmile import extract_opensmile_lld_feature, analyze_opensmile_stats
+from video_openface import analyze_openface_stats
 from voice_vggish import extract_vggish_feature
+from text_ginza import analyze_text
+
+import pandas as pd
+
 import argparse
 from logzero import logger
 
@@ -13,18 +18,16 @@ def main(
     no_video,
     no_voice,
 ):
-    # qa_result_df = pd.read_csv(input_qa_file)
-    # if not no_text:
-    #     qa_result_df = analyze_text(qa_result_df, preprocessed_dir, feature_dir)
-    # if not no_video:
-    #     qa_result_df = analyze_openface_stats(qa_result_df, feature_dir)
-    # if not no_voice:
-    #     qa_result_df = analyze_opensmile_stats(qa_result_df, preprocessed_dir)
-
-    # NOTE: ここまではOK
-    extract_opensmile_lld_feature(preprocessed_dir, feature_dir)
-    extract_vggish_feature(preprocessed_dir, feature_dir)
-    # qa_result_df.to_csv(output_qa_file, index=False)
+    qa_result_df = pd.read_csv(input_qa_file)
+    if not no_text:
+        qa_result_df = analyze_text(qa_result_df, preprocessed_dir, feature_dir)
+    if not no_video:
+        qa_result_df = analyze_openface_stats(qa_result_df, feature_dir)
+    if not no_voice:
+        qa_result_df = analyze_opensmile_stats(qa_result_df, preprocessed_dir)
+        extract_opensmile_lld_feature(preprocessed_dir, feature_dir)
+        extract_vggish_feature(preprocessed_dir, feature_dir)
+    qa_result_df.to_csv(output_qa_file, index=False)
     return
 
 
