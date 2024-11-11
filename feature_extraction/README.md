@@ -38,7 +38,6 @@
 
 ### VGGish
 
-### Wav2Vec2.0
 
 ## 動画データ
 
@@ -55,5 +54,3 @@ OpenFaceを用いて顔表情の特徴量を抽出した後に、それらから
 2. `docker run -v .:/home/openface-build/counseling -it algebr/openface:latest`でこのリポジトリをマウントしたDockerイメージを起動する
 3. `cd counseling/feature_extraction`でリポジトリの特徴量抽出用のディレクトリに移動する
 4. `./openface.sh ../../build/bin/FeatureExtraction`でOpenFaceを実行する
-
-### Dlib

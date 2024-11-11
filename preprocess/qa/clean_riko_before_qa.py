@@ -7,9 +7,9 @@ import pandas as pd
 
 
 def main():
-    igaku_file = "../../data/raw_data/qa/igaku/igaku_before.csv"  # 医学の事前アンケート
-    riko_file = "../../data/raw_data/qa/riko/riko_before.csv"  # 理工の事前アンケート
-    output_file = "../../data/raw_data/qa/riko/riko_before_clean.csv"
+    igaku_file = "../../data/qa/igaku_before.csv"  # 医学の事前アンケート
+    riko_file = "../../data/qa/riko_before.csv"  # 理工の事前アンケート
+    output_file = "../../data/qa/riko_before_clean.csv"
 
     igaku_df = pd.read_csv(igaku_file)
     riko_df = pd.read_csv(riko_file)

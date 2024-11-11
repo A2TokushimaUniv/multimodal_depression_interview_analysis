@@ -3,7 +3,7 @@ from logzero import logger
 import pandas as pd
 import spacy
 from collections import Counter
-from utils import get_riko_target, get_igaku_target, get_text_files
+from utils import get_text_files
 
 nlp = spacy.load("ja_ginza_electra")
 
@@ -210,7 +210,7 @@ def _get_positive_verb_adj(verbs_file):
 
 def _add_results(
     qa_result_df,
-    target,
+    data_id,
     negative_noun_count,
     negative_verb_adj_count,
     positive_nouns_count,
@@ -226,49 +226,49 @@ def _add_results(
     結果をDataFrameに追加する
     """
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["NegativeNounCount"]
+        qa_result_df["Subject_ID"] == data_id, column_names["NegativeNounCount"]
     ] = negative_noun_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["NegativeVerbAdjCount"],
     ] = negative_verb_adj_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["NegativeWordCount"]
+        qa_result_df["Subject_ID"] == data_id, column_names["NegativeWordCount"]
     ] = negative_noun_count + negative_verb_adj_count
 
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["PositiveNounCount"]
+        qa_result_df["Subject_ID"] == data_id, column_names["PositiveNounCount"]
     ] = positive_nouns_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["PositiveVerbAdjCount"],
     ] = positive_verb_adj_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["PositiveWordCount"]
+        qa_result_df["Subject_ID"] == data_id, column_names["PositiveWordCount"]
     ] = positive_nouns_count + positive_verb_adj_count
 
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["PercentagePositiveNouns"],
     ] = percentage_positive_nouns
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["PercentagePositiveVerbAdj"],
     ] = percentage_positive_verb_adj
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["PercentageNegativeNouns"],
     ] = percentage_negative_nouns
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["PercentageNegativeVerbAdj"],
     ] = percentage_negative_verb_adj
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["CharPerMinutes"],
     ] = char_per_minutes
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target,
+        qa_result_df["Subject_ID"] == data_id,
         column_names["WordPerMinutes"],
     ] = word_per_minutes
     return qa_result_df
@@ -282,11 +282,12 @@ def _write_result(file_name, result_dict):
         f.writelines("\n".join(str(k) + "," + str(v) for k, v in result_dict.items()))
 
 
-def analyze_text(qa_result_df, input_data_dir):
+def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     """
     GiNZAと極性辞書を使ってテキストを分析する
     """
-    riko_text_files, igaku_text_files = get_text_files(input_data_dir)
+    text_files = get_text_files(input_data_dir)
+
     nouns_file = "./sentiment_polarity/名詞.tsv"
     verb_adj_file = "./sentiment_polarity/用言.tsv"
     negative_nouns = _get_negative_nouns(nouns_file)
@@ -299,18 +300,15 @@ def analyze_text(qa_result_df, input_data_dir):
     all_positive_noun_counter = Counter()
     all_positive_verb_adj_counter = Counter()
 
-    for riko_text_file in riko_text_files:
-        logger.info(f"Counting negative words from {riko_text_file}....")
-        riko_texts = pd.read_csv(riko_text_file)
-        texts = riko_texts["text"].tolist()
-        start_seconds = riko_texts["start_seconds"].tolist()
-        end_seconds = riko_texts["end_seconds"].tolist()
+    for data_id, text_file in text_files:
+        logger.info(f"Counting negative words from {text_file}....")
+        text_data = pd.read_csv(text_file)
+        texts = text_data["text"].tolist()
+        start_seconds = text_data["start_seconds"].tolist()
+        end_seconds = text_data["end_seconds"].tolist()
         char_per_minutes, word_per_minutes = _calculate_speech_rate(
             texts, start_seconds, end_seconds
         )
-
-        data_id = riko_text_file.split("/")[-2]
-        target = get_riko_target(data_id)
         (
             negative_noun_count,
             negative_verb_adj_count,
@@ -334,7 +332,7 @@ def analyze_text(qa_result_df, input_data_dir):
 
         qa_result_df = _add_results(
             qa_result_df,
-            target,
+            data_id,
             negative_noun_count,
             negative_verb_adj_count,
             positive_nouns_count,
@@ -347,60 +345,11 @@ def analyze_text(qa_result_df, input_data_dir):
             word_per_minutes,
         )
 
-    for igaku_text_file in igaku_text_files:
-        logger.info(f"Counting negative words from {igaku_text_file}....")
-        igaku_texts = pd.read_csv(igaku_text_file)
-        texts = igaku_texts["text"].tolist()
-        start_seconds = igaku_texts["start_seconds"].tolist()
-        end_seconds = igaku_texts["end_seconds"].tolist()
-        char_per_minutes, word_per_minutes = _calculate_speech_rate(
-            texts, start_seconds, end_seconds
-        )
-
-        data_id = igaku_text_file.split("/")[-2]
-        target = get_igaku_target(data_id)
-        (
-            negative_noun_count,
-            negative_verb_adj_count,
-            percentage_negative_nouns,
-            percentage_negative_verb_adj,
-            top_negative_nouns,
-            top_negative_verb_adj,
-        ) = _count_negative_words(texts, negative_nouns, negative_verb_adj)
-        all_negative_noun_counter.update(top_negative_nouns)
-        all_negative_verb_adj_counter.update(top_negative_verb_adj)
-
-        (
-            positive_nouns_count,
-            positive_verb_adj_count,
-            percentage_positive_nouns,
-            percentage_positive_verb_adj,
-            top_positive_nouns,
-            top_positive_verb_adj,
-        ) = _count_positive_words(texts, positive_nouns, positive_verb_adj)
-        all_positive_noun_counter.update(top_positive_nouns)
-        all_positive_verb_adj_counter.update(top_positive_verb_adj)
-
-        qa_result_df = _add_results(
-            qa_result_df,
-            target,
-            negative_noun_count,
-            negative_verb_adj_count,
-            positive_nouns_count,
-            positive_verb_adj_count,
-            percentage_negative_nouns,
-            percentage_negative_verb_adj,
-            percentage_positive_nouns,
-            percentage_positive_verb_adj,
-            char_per_minutes,
-            word_per_minutes,
-        )
-
-    os.makedirs(os.path.join(input_data_dir, "ranking"), exist_ok=True)
+    os.makedirs(os.path.join(output_data_dir, "text_ranking"), exist_ok=True)
     all_top_negative_nouns = _get_top_frequent_words(all_negative_noun_counter, 100)
     logger.info(f"All top negative nouns: {all_top_negative_nouns}")
     _write_result(
-        os.path.join(input_data_dir, "ranking", "all_top_negative_nouns.csv"),
+        os.path.join(output_data_dir, "text_ranking", "all_top_negative_nouns.csv"),
         all_top_negative_nouns,
     )
 
@@ -409,14 +358,14 @@ def analyze_text(qa_result_df, input_data_dir):
     )
     logger.info(f"All top negative verb adjectives: {all_top_negative_verb_adj}")
     _write_result(
-        os.path.join(input_data_dir, "ranking", "all_top_negative_verb_adj.csv"),
+        os.path.join(output_data_dir, "text_ranking", "all_top_negative_verb_adj.csv"),
         all_top_negative_verb_adj,
     )
 
     all_top_positive_nouns = _get_top_frequent_words(all_positive_noun_counter, 100)
     logger.info(f"All top positive nouns: {all_top_positive_nouns}")
     _write_result(
-        os.path.join(input_data_dir, "ranking", "all_top_positive_nouns.csv"),
+        os.path.join(output_data_dir, "text_ranking", "all_top_positive_nouns.csv"),
         all_top_positive_nouns,
     )
 
@@ -425,7 +374,7 @@ def analyze_text(qa_result_df, input_data_dir):
     )
     logger.info(f"All top positive verb adjectives: {all_top_positive_verb_adj}")
     _write_result(
-        os.path.join(input_data_dir, "ranking", "all_top_positive_verb_adj.csv"),
+        os.path.join(output_data_dir, "text_ranking", "all_top_positive_verb_adj.csv"),
         all_top_positive_verb_adj,
     )
 

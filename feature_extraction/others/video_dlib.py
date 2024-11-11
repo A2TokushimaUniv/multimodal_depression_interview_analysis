@@ -7,8 +7,10 @@ import urllib.request
 import bz2
 import dlib
 import pandas as pd
+from typing_extensions import deprecated
 
 
+@deprecated("dlibは分析やモデル学習に使っていない")
 def _download_face_landmark_model():
     """
     DlibでのFace Landmark検出のためのモデルをダウンロードする
@@ -39,6 +41,7 @@ def _download_face_landmark_model():
     return
 
 
+@deprecated("dlibは分析やモデル学習に使っていない")
 def _get_dlib_feature(video_path, detector, predictor):
     """
     D-Vlogの元論文に記載されている方法でDlibの特徴量を取得する
@@ -87,6 +90,7 @@ def _get_dlib_feature(video_path, detector, predictor):
     return result
 
 
+@deprecated("dlibは分析やモデル学習に使っていない")
 def extract_dlib_feature(input_data_dir):
     """
     Dlibの特徴量を抽出する
