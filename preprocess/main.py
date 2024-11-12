@@ -104,7 +104,8 @@ def _get_subject_video(video_file, subject_segments, video_output_file_path):
         clips.append(clip)
     # 切り抜いた動画を結合
     final_clip = concatenate_videoclips(clips)
-    final_clip.write_videofile(video_output_file_path, codec="libx264")
+    # 10FPSで動画を保存する
+    final_clip.write_videofile(video_output_file_path, codec="libx264", fps=10)
 
     # リソースを解放
     video.reader.close()
@@ -116,7 +117,7 @@ def _get_subject_video(video_file, subject_segments, video_output_file_path):
     return
 
 
-def _preprocess(video_file_path, voice_file_path, save_dir):
+def _preprocess(video_file_path, voice_file_path, save_dir, text_output_file_path):
     """
     前処理を行う
     """
@@ -128,7 +129,6 @@ def _preprocess(video_file_path, voice_file_path, save_dir):
 
     voice_output_file_name = os.path.splitext(os.path.basename(voice_file_path))[0]
     voice_output_file_path = os.path.join(save_dir, f"{voice_output_file_name}.wav")
-    text_output_file_path = os.path.join(save_dir, f"{voice_output_file_name}.csv")
     # subject_segmentsを利用して音声データから被験者の音声と発話テキストを抜き出す
     _get_subject_voice_text(
         audio,
@@ -174,9 +174,15 @@ def main(input_data_dir, output_data_dir):
             raise ValueError("voice_data_idとvideo_data_idが一致しません")
 
         data_id = voice_data_id
-        save_dir = os.path.join(output_data_dir, data_id)
-        os.makedirs(save_dir, exist_ok=True)
-        _preprocess(video_file_path, voice_file_path, save_dir)
+        multimodal_save_dir = os.path.join(output_data_dir, data_id)
+        os.makedirs(multimodal_save_dir, exist_ok=True)
+        os.makedirs(os.path.join(output_data_dir, "text_elan"), exist_ok=True)
+        text_output_file_path = os.path.join(
+            output_data_dir, "text_elan", f"{data_id}.csv"
+        )
+        _preprocess(
+            video_file_path, voice_file_path, multimodal_save_dir, text_output_file_path
+        )
     logger.info("Finished preprocessing!")
 
 

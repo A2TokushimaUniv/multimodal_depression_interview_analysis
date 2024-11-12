@@ -226,49 +226,49 @@ def _add_results(
     結果をDataFrameに追加する
     """
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id, column_names["NegativeNounCount"]
+        qa_result_df["ID"] == data_id, column_names["NegativeNounCount"]
     ] = negative_noun_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["NegativeVerbAdjCount"],
     ] = negative_verb_adj_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id, column_names["NegativeWordCount"]
+        qa_result_df["ID"] == data_id, column_names["NegativeWordCount"]
     ] = negative_noun_count + negative_verb_adj_count
 
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id, column_names["PositiveNounCount"]
+        qa_result_df["ID"] == data_id, column_names["PositiveNounCount"]
     ] = positive_nouns_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["PositiveVerbAdjCount"],
     ] = positive_verb_adj_count
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id, column_names["PositiveWordCount"]
+        qa_result_df["ID"] == data_id, column_names["PositiveWordCount"]
     ] = positive_nouns_count + positive_verb_adj_count
 
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["PercentagePositiveNouns"],
     ] = percentage_positive_nouns
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["PercentagePositiveVerbAdj"],
     ] = percentage_positive_verb_adj
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["PercentageNegativeNouns"],
     ] = percentage_negative_nouns
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["PercentageNegativeVerbAdj"],
     ] = percentage_negative_verb_adj
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["CharPerMinutes"],
     ] = char_per_minutes
     qa_result_df.loc[
-        qa_result_df["Subject_ID"] == data_id,
+        qa_result_df["ID"] == data_id,
         column_names["WordPerMinutes"],
     ] = word_per_minutes
     return qa_result_df
@@ -286,7 +286,7 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     """
     GiNZAと極性辞書を使ってテキストを分析する
     """
-    text_files = get_text_files(input_data_dir)
+    text_files = get_text_files(os.path.join(input_data_dir, "text_elan"))
 
     nouns_file = "./sentiment_polarity/名詞.tsv"
     verb_adj_file = "./sentiment_polarity/用言.tsv"

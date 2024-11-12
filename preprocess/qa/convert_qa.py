@@ -213,7 +213,7 @@ def main(before_qa_file, after_qa_file, output_file):
         "Interview_Sad",
     ]
 
-    subject_id_df = before_qa_df.iloc[:, 0]
+    id_df = before_qa_df.iloc[:, 0]
     # 分析対象の列だけを抜き出す
     before_qa_df = before_qa_df.iloc[:, 7:-3]
     # BIG5は10問
@@ -235,14 +235,14 @@ def main(before_qa_file, after_qa_file, output_file):
     converted_df = convert_section(
         big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
-    result_df = pd.concat([subject_id_df, interview_df, converted_df], axis=1)
+    result_df = pd.concat([id_df, interview_df, converted_df], axis=1)
     result_df.to_csv(output_file, index=False)
     return
 
 
 if __name__ == "__main__":
     os.makedirs("../../data/qa", exist_ok=True)
-    riko_before_qa_file = "../../data/qa/riko_before_clean.csv"
+    riko_before_qa_file = "../../data/qa/riko_before.csv"
     riko_after_qa_file = "../../data/qa/riko_after.csv"
     riko_output_file = "../../data/qa/riko_qa_result.csv"
     logger.info("Input Before QA file: {}".format(riko_before_qa_file))
