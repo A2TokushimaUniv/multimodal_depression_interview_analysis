@@ -6,6 +6,7 @@
 import pandas as pd
 
 
+# TODO: 必要な列をCSVで定義しておいて抜き出す形式に変えるのであればこれは必要ない
 def main():
     igaku_file = "../../data/qa/igaku_before.csv"  # 医学の事前アンケート
     riko_file = "../../data/qa/riko_before.csv"  # 理工の事前アンケート
