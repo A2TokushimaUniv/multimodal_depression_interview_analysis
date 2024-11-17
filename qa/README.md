@@ -8,6 +8,9 @@
 
 ## 実行手順
 
+1. アンケートの生データ（Excelファイル）を開き「名前をつけて保存」からCSV形式に変換した後、`data/qa`以下に格納する
+2.
+
 1. `/data/raw/<igaku> or <riko>/.csv`の形式でデータを格納する
 2. `qa/clean_riko_before.py`を実行して理工アンケートを整形する
 3. `qa/convert_qa.py`を実行して、アンケート項目をまとめて数値に変換したデータ（`<igaku> or <riko>_qa_result.csv`）を生成する
