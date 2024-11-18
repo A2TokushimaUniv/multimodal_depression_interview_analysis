@@ -98,6 +98,13 @@ def main(
     extracted_igaku_child_after_df = extracted_igaku_after_df[
         ~extracted_igaku_after_df["ID"].isin(igaku_before_df["ID"])
     ]
+    extracted_igaku_child_after_df.columns = [
+        "ID",
+        "Interview_Happy",
+        "Interview_Anxiety",
+        "Interview_Disgust",
+        "Interview_Sad",
+    ]
     qa_child_results_df = pd.merge(
         converted_child_parent_before_df,
         extracted_igaku_child_after_df,

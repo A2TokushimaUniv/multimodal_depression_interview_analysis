@@ -51,6 +51,7 @@ def get_significant_pairs(output_dir, correlation_matrix, threshold):
         "LSAS",
         "PHQ9",
         "SIS",
+        "SCAS",
     )
 
     openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
@@ -111,7 +112,7 @@ def get_heatmap(output_dir, correlation_matrix):
     """
     相関行列のヒートマップをプロットする
     """
-    logger.info("Plotting heatmap...")
+    logger.info("ヒートマップを生成しています...")
     plt.figure(figsize=(50, 30))
     sns.heatmap(
         correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1, center=0
@@ -133,42 +134,50 @@ def calculate_statistics(output_dir, df):
 
 
 def main(input_file_path, output_dir, threshold):
-    df = pd.read_csv(input_file_path)
+    qa_df = pd.read_csv(input_file_path)
+    os.makedirs(output_dir, exist_ok=True)
 
-    logger.info("Calculating correlation matrix...")
+    logger.info("相関係数を計算しています...")
     columns_to_exclude = [
-        col for col in df.columns if "Level" in col or "Flag" in col or "ID" == col
+        col for col in qa_df.columns if "Level" in col or "Binary" in col or "ID" == col
     ]
-    df = df.drop(columns=columns_to_exclude)
-    calculate_statistics(output_dir, df)
-    correlation_matrix = df.corr()
+    qa_df = qa_df.drop(columns=columns_to_exclude)
+    calculate_statistics(output_dir, qa_df)
+    correlation_matrix = qa_df.corr()
     correlation_matrix.to_csv(os.path.join(output_dir, "correlation_matrix.csv"))
-    get_significant_pairs(output_dir, correlation_matrix, threshold)
     get_heatmap(output_dir, correlation_matrix)
+    get_significant_pairs(output_dir, correlation_matrix, threshold)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--input_file_path",
-        default="../data/qa/qa_result_features.csv",
-        help="Input file path",
+        "--adult_qa_file_path",
+        default="../data/qa/adult_features.csv",
+        help="分析対象のアンケート（成人）",
         type=str,
     )
     parser.add_argument(
-        "--output_dir",
-        default="./analysis_results",
-        help="Output directory",
+        "--child_qa_file_path",
+        default="../data/qa/child_features.csv",
+        help="分析対象のアンケート（児童思春期）",
         type=str,
     )
     parser.add_argument(
-        "--threshold", default=0.3, help="Correlation threshold", type=float
+        "--output_adult_dir",
+        default="./adult_analysis_results",
+        help="成人アンケートの分析結果の出力ディレクトリ",
+        type=str,
+    )
+    parser.add_argument(
+        "--output_child_dir",
+        default="./child_analysis_results",
+        help="児童思春期アンケートの分析結果の出力ディレクトリ",
+        type=str,
+    )
+    parser.add_argument(
+        "--threshold", default=0.3, help="出力する相関係数の閾値", type=float
     )
     args = parser.parse_args()
-    input_file_path = args.input_file_path
-    output_dir = args.output_dir
-    threshold = args.threshold
-    logger.info(f"Input file: {input_file_path}")
-    logger.info(f"Output directory: {output_dir}")
-    logger.info(f"Threshold: {threshold}")
-    main(input_file_path, output_dir, threshold)
+    main(args.adult_qa_file_path, args.output_adult_dir, args.threshold)
+    main(args.child_qa_file_path, args.output_child_dir, args.threshold)

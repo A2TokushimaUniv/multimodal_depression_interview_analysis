@@ -198,7 +198,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--input_data_dir",
-        help="Path to input data directory",
+        help="生データを格納しているディレクトリ",
         type=str,
         default="../data/raw",
     )
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--output_data_dir",
         default="../data/preprocessed",
-        help="Path to output directory",
+        help="前処理結果を保存するディレクトリ",
     )
 
     args = parser.parse_args()
