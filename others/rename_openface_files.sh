@@ -6,11 +6,12 @@ DIR="../data/feature/openface"
 for file in "$DIR"/*.csv; do
     # ファイル名から拡張子を除いた部分を取得
     filename=$(basename "$file" .csv)
+    echo "$filename"
 
     # ハイフンで区切られている場合
     if [[ "$filename" == *-* ]]; then
         number=$(echo "$filename" | cut -d'-' -f1)
-        newname=$(printf "riko%03d_openface.csv" "$number")
+        newname="riko${number}_openface.csv"
 
     # アンダーバーで区切られている場合、最初にPがついている場合はPの部分を抜き出す
     elif [[ "$filename" == *_* && "$filename" == P* ]]; then
@@ -28,6 +29,6 @@ for file in "$DIR"/*.csv; do
     fi
 
     # ファイル名の変更
-    mv "$file" "$DIR/$newname"
+    mv -i "$file" "$DIR/$newname"
     echo "Renamed $file to $DIR/$newname"
 done
