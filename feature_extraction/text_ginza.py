@@ -71,30 +71,19 @@ def _count_negative_words(texts, negative_nouns, negative_verb_adj):
             if token.pos_ == "NOUN":
                 total_noun_count += 1
                 if token.lemma_ in negative_nouns:
-                    logger.info(f"ネガティブな名詞：{token.lemma_}")
                     negative_noun_count += 1
                     negative_noun_counter[token.lemma_] += 1
             # ネガティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in negative_verb_adj:
-                    logger.info(f"ネガティブな用言：{token.lemma_}")
                     negative_verb_count += 1
                     negative_verb_adj_counter[token.lemma_] += 1
 
     top_negative_nouns = _get_top_frequent_words(negative_noun_counter)
     top_negative_verb_adj = _get_top_frequent_words(negative_verb_adj_counter)
-    logger.info(f"ネガティブな名詞で最も出現頻度の高かった単語: {top_negative_nouns}")
-    logger.info(
-        f"ネガティブな用言で最も出現頻度の高かった単語: {top_negative_verb_adj}"
-    )
-
     percentage_negative_nouns = (negative_noun_count / total_noun_count) * 100
     percentage_negative_verb_adj = (negative_verb_count / total_verb_adj_count) * 100
-    logger.info(f"ネガティブな名詞の数: {negative_noun_count}")
-    logger.info(f"全名詞中のネガティブな名詞の割合: {percentage_negative_nouns}")
-    logger.info(f"ネガティブな用言の数: {negative_verb_count}")
-    logger.info(f"全用言中のネガティブな用言の割合: {percentage_negative_verb_adj}")
     return (
         negative_noun_count,
         negative_verb_count,
@@ -123,29 +112,19 @@ def _count_positive_words(texts, positive_nouns, positive_verb_adj):
             if token.pos_ == "NOUN":
                 total_noun_count += 1
                 if token.lemma_ in positive_nouns:
-                    logger.info(f"ポジティブな名詞：{token.lemma_}")
                     positive_noun_count += 1
                     positive_noun_counter[token.lemma_] += 1
             # ポジティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in positive_verb_adj:
-                    logger.info(f"ポジティブな用言：{token.lemma_}")
                     positive_verb_count += 1
                     positive_verb_counter[token.lemma_] += 1
     top_positive_nouns = _get_top_frequent_words(positive_noun_counter)
     top_positive_verb_adj = _get_top_frequent_words(positive_verb_counter)
-    logger.info(f"ポジティブな名詞で最も出現頻度の高かった単語: {top_positive_nouns}")
-    logger.info(
-        f"ポジティブな用言で最も出現頻度の高かった単語: {top_positive_verb_adj}"
-    )
 
     percentage_positive_nouns = (positive_noun_count / total_noun_count) * 100
     percentage_positive_verb_adj = (positive_verb_count / total_verb_adj_count) * 100
-    logger.info(f"ポジティブな名詞の数: {positive_noun_count}")
-    logger.info(f"全名詞中のポジティブな名詞の割合: {percentage_positive_nouns}")
-    logger.info(f"Positive verb and adj count: {positive_verb_count}")
-    logger.info(f"全用言中のポジティブな用言の割合: {percentage_positive_verb_adj}")
     return (
         positive_noun_count,
         positive_verb_count,
@@ -278,11 +257,16 @@ def _write_result(file_name, result_dict):
         f.writelines("\n".join(str(k) + "," + str(v) for k, v in result_dict.items()))
 
 
-def analyze_text(qa_result_df, input_data_dir, output_data_dir):
+def analyze_text(adult_qa_df, child_qa_df, input_data_dir, output_data_dir):
     """
     GiNZAと極性辞書を使ってテキストを分析する
     """
+    logger.info("テキストを分析しています....")
     text_files = get_text_files(os.path.join(input_data_dir, "text_elan"))
+    if len(text_files) == 0:
+        logger.error("テキストファイルが見つかりませんでした")
+        raise ValueError("テキストファイルが見つかりませんでした")
+    logger.info(f"{len(text_files)}個のテキストファイルを読み込みました")
 
     nouns_file = "./sentiment_polarity/名詞.tsv"
     verb_adj_file = "./sentiment_polarity/用言.tsv"
@@ -297,6 +281,7 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     all_positive_verb_adj_counter = Counter()
 
     for data_id, text_file in text_files:
+        logger.info(f"{text_file}からテキストを分析しています....")
         text_data = pd.read_csv(text_file)
         texts = text_data["text"].tolist()
         start_seconds = text_data["start_seconds"].tolist()
@@ -325,8 +310,23 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
         all_positive_noun_counter.update(top_positive_nouns)
         all_positive_verb_adj_counter.update(top_positive_verb_adj)
 
-        qa_result_df = _add_results(
-            qa_result_df,
+        adult_qa_df = _add_results(
+            adult_qa_df,
+            data_id,
+            negative_noun_count,
+            negative_verb_adj_count,
+            positive_nouns_count,
+            positive_verb_adj_count,
+            percentage_negative_nouns,
+            percentage_negative_verb_adj,
+            percentage_positive_nouns,
+            percentage_positive_verb_adj,
+            char_per_minutes,
+            word_per_minutes,
+        )
+
+        child_qa_df = _add_results(
+            child_qa_df,
             data_id,
             negative_noun_count,
             negative_verb_adj_count,
@@ -380,5 +380,5 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
         os.path.join(output_data_dir, "text_ranking", "all_top_positive_verb_adj.csv"),
         all_top_positive_verb_adj,
     )
-
-    return qa_result_df
+    logger.info("テキスト分析を終了しました")
+    return adult_qa_df, child_qa_df

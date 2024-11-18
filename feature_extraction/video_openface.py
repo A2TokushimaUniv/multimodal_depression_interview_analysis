@@ -4,7 +4,7 @@ from logzero import logger
 from utils import get_openface_files
 
 
-def _get_results(csv_file, qa_result_df):
+def _get_results(csv_file, qa_result_df, data_id):
     """
     結果をDataFrameに追加する
     """
@@ -22,7 +22,6 @@ def _get_results(csv_file, qa_result_df):
     # AU全体の標準偏差を計算
     au_intensity_std_overall = au_intensity_df.stack().std()
 
-    data_id = os.path.splitext(os.path.basename(csv_file))[0]
     qa_result_df.loc[qa_result_df["ID"] == data_id, "AUall_r_Mean"] = (
         au_intensity_mean_overall
     )
@@ -40,11 +39,12 @@ def _get_results(csv_file, qa_result_df):
     return qa_result_df
 
 
-def analyze_openface_stats(qa_result_df, input_data_dir):
+def analyze_openface_stats(adult_qa_df, child_qa_df, input_data_dir):
     """
     OpenFaceの特徴量を使って統計値を計算する
     """
-    openface_files = get_openface_files(input_data_dir)
-    for openface_file in openface_files:
-        qa_result_df = _get_results(openface_file, qa_result_df)
-    return qa_result_df
+    openface_files = get_openface_files(os.path.join(input_data_dir, "openface"))
+    for data_id, openface_file in openface_files:
+        adult_qa_df = _get_results(openface_file, adult_qa_df, data_id)
+        child_qa_df = _get_results(openface_file, child_qa_df, data_id)
+    return adult_qa_df, child_qa_df

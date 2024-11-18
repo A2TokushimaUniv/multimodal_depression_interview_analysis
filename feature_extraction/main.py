@@ -2,9 +2,7 @@ from voice_opensmile import extract_opensmile_lld_feature, analyze_opensmile_sta
 from video_openface import analyze_openface_stats
 from voice_vggish import extract_vggish_feature
 from text_ginza import analyze_text
-
 import pandas as pd
-
 import argparse
 from logzero import logger
 
@@ -20,21 +18,29 @@ def main(
     no_video,
     no_voice,
 ):
-    adult_df = pd.read_csv(input_adult_qa_file)
-    child_df = pd.read_csv(input_child_qa_file)
+    logger.info("特徴量の抽出を開始します")
+    adult_qa_df = pd.read_csv(input_adult_qa_file)
+    child_qa_df = pd.read_csv(input_child_qa_file)
     if not no_text:
-        adult_df = analyze_text(adult_df, preprocessed_dir, feature_dir)
-        child_df = analyze_text(child_df, preprocessed_dir, feature_dir)
+        logger.info("テキスト特徴量を抽出しています....")
+        adult_qa_df, child_qa_df = analyze_text(
+            adult_qa_df, child_qa_df, preprocessed_dir, feature_dir
+        )
     if not no_video:
-        adult_df = analyze_openface_stats(adult_df, feature_dir)
-        child_df = analyze_openface_stats(child_df, feature_dir)
+        logger.info("動画特徴量を抽出しています....")
+        adult_qa_df, child_qa_df = analyze_openface_stats(
+            adult_qa_df, child_qa_df, feature_dir
+        )
     if not no_voice:
-        adult_df = analyze_opensmile_stats(adult_df, preprocessed_dir)
-        child_df = analyze_opensmile_stats(child_df, preprocessed_dir)
+        logger.info("音声特徴量を抽出しています....")
+        adult_qa_df, child_qa_df = analyze_opensmile_stats(
+            adult_qa_df, child_qa_df, preprocessed_dir
+        )
         extract_opensmile_lld_feature(preprocessed_dir, feature_dir)
         extract_vggish_feature(preprocessed_dir, feature_dir)
-    adult_df.to_csv(output_adult_qa_file, index=False)
-    child_df.to_csv(output_child_qa_file, index=False)
+    adult_qa_df.to_csv(output_adult_qa_file, index=False)
+    child_qa_df.to_csv(output_child_qa_file, index=False)
+    logger.info("特徴量の抽出が完了しました")
     return
 
 
@@ -108,6 +114,8 @@ if __name__ == "__main__":
 
     logger.info(f"入力アンケートデータ（成人）: {input_adult_qa_file}")
     logger.info(f"入力アンケートデータ（児童思春期）: {input_child_qa_file}")
+    logger.info(f"前処理済みデータディレクトリ: {preprocessed_dir}")
+    logger.info(f"特徴量ディレクトリ: {feature_dir}")
     logger.info(f"出力アンケートデータ（成人）: {output_adult_feature_file}")
     logger.info(f"出力アンケートデータ（児童思春期）: {output_child_feature_file}")
     main(

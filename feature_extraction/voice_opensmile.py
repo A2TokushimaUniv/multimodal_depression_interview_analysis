@@ -81,7 +81,7 @@ def _get_others(feature):
 
 def _add_results(
     qa_result_df,
-    target,
+    data_id,
     pitch_mean,
     pitch_stddev,
     loudness_mean,
@@ -97,49 +97,51 @@ def _add_results(
     """
     結果をDataFrameに追加する
     """
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["PitchMean"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["PitchMean"]] = (
         pitch_mean
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["PitchStddev"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["PitchStddev"]] = (
         pitch_stddev
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["LoudnessMean"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["LoudnessMean"]] = (
         loudness_mean
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["LoudnessStddev"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["LoudnessStddev"]] = (
         loudness_stddev
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["JitterMean"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["JitterMean"]] = (
         jitter_mean
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["JitterStddev"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["JitterStddev"]] = (
         jitter_stddev
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["ShimmerMean"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["ShimmerMean"]] = (
         shimmer_mean
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["ShimmerStddev"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["ShimmerStddev"]] = (
         shimmer_stddev
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["HNRdBACF"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["HNRdBACF"]] = (
         HNRdBACF_sma3nz
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["F0semitone"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["F0semitone"]] = (
         F0semitone
     )
-    qa_result_df.loc[qa_result_df["ID"] == target, column_names["F3frequency"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, column_names["F3frequency"]] = (
         F3frequency
     )
     return qa_result_df
 
 
-def analyze_opensmile_stats(qa_result_df, input_data_dir):
+def analyze_opensmile_stats(adult_qa_df, child_qa_df, input_data_dir):
     """
     音声からopenSMILEの特徴量の統計値を取得し、その平均と標準偏差を計算する
     """
+    logger.info("OpenSMILE特徴量の統計値を計算しています....")
     voice_files = get_voice_files(input_data_dir)
 
     for data_id, voice_file in voice_files:
+        print(data_id)
         logger.info(f"{voice_file}からOpenSMILE特徴量の統計値を計算しています....")
         stats_feature = smile_functions.process_file(voice_file)
         pitch_mean, pitch_stddev = _get_pitch(stats_feature)
@@ -148,8 +150,8 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
         shimmer_mean, shimmer_stddev = _get_shimmer(stats_feature)
         HNRdBACF_sma3nz, F0semitone, F3frequency = _get_others(stats_feature)
 
-        qa_result_df = _add_results(
-            qa_result_df,
+        adult_qa_df = _add_results(
+            adult_qa_df,
             data_id,
             pitch_mean,
             pitch_stddev,
@@ -164,7 +166,24 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
             F3frequency,
         )
 
-    return qa_result_df
+        child_qa_df = _add_results(
+            child_qa_df,
+            data_id,
+            pitch_mean,
+            pitch_stddev,
+            loudness_mean,
+            loudness_stddev,
+            jitter_mean,
+            jitter_stddev,
+            shimmer_mean,
+            shimmer_stddev,
+            HNRdBACF_sma3nz,
+            F0semitone,
+            F3frequency,
+        )
+
+    logger.info("OpenSMILE特徴量の統計値を計算しました")
+    return adult_qa_df, child_qa_df
 
 
 def _get_lld(voice_path):
@@ -198,6 +217,7 @@ def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
     """
     音声からopenSMILEのLLD特徴量を抽出する
     """
+    logger.info("OpenSMILEのLLD特徴量を抽出しています....")
     voice_files = get_voice_files(input_data_dir)
     for data_id, voice_file in voice_files:
         logger.info(f"{voice_file}からOpenSMILEのLLD特徴量を抽出しています....")
@@ -207,3 +227,4 @@ def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
             os.path.join(output_data_dir, "opensmile"),
             f"{data_id}_opensmile.csv",
         )
+    logger.info("OpenSMILEのLLD特徴量を抽出しました")

@@ -33,20 +33,7 @@ def get_voice_files(input_data_dir):
     result = []
     for file_path in file_paths:
         data_id = os.path.relpath(file_path, input_data_dir).split(os.sep)[0]
-        result.append((data_id, file_path))
-    result.sort()
-    return result
-
-
-def get_video_files(input_data_dir):
-    """
-    動画ファイルを取得する
-    """
-    pattern = os.path.join(input_data_dir, "*", "*.mp4")
-    file_paths = glob.glob(pattern, recursive=True)
-    result = []
-    for file_path in file_paths:
-        data_id = os.path.relpath(file_path, input_data_dir).split(os.sep)[0]
+        print(data_id)
         result.append((data_id, file_path))
     result.sort()
     return result
@@ -56,22 +43,26 @@ def get_text_files(input_data_dir):
     """
     テキストファイルを取得する
     """
-    pattern = os.path.join(input_data_dir, "*", "*.csv")
+    pattern = os.path.join(input_data_dir, "*.csv")
     file_paths = glob.glob(pattern, recursive=True)
     result = []
     for file_path in file_paths:
-        data_id = os.path.relpath(file_path, input_data_dir).split(os.sep)[0]
+        data_id = (
+            os.path.relpath(file_path, input_data_dir).split(os.sep)[0].split("_")[0]
+        )
         result.append((data_id, file_path))
     result.sort()
     return result
 
 
 def get_openface_files(input_data_dir):
-    pattern = os.path.join(input_data_dir, "*", "*.csv")
+    pattern = os.path.join(input_data_dir, "*.csv")
     file_paths = glob.glob(pattern, recursive=True)
     result = []
     for file_path in file_paths:
-        data_id = os.path.relpath(file_path, input_data_dir).split(os.sep)[0]
+        data_id = (
+            os.path.relpath(file_path, input_data_dir).split(os.sep)[0].split("_")[0]
+        )
         result.append((data_id, file_path))
     result.sort()
     return result
