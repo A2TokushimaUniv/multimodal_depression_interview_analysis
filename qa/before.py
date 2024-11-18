@@ -193,7 +193,18 @@ def _convert_sis(sis_df):
     return converted_sis_df
 
 
-def _convert_each_section(big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df):
+def _convert_scas(scas_df):
+    scas_mapping = {
+        "いつもそうだ": 3,
+        "ときどきそうだ": 2,
+        "たまにそうだ": 1,
+        "ぜんぜんない": 0,
+    }
+    converted_scas_df = _df_mapping_sum(scas_df, scas_mapping, "SCAS")
+    return converted_scas_df
+
+
+def _adult_section(big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df):
     """
     各質問項目を数値に変換する
     """
@@ -219,13 +230,28 @@ def _convert_each_section(big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, s
     return converted_df
 
 
-def convert(before_qa_df):
+def _child_section(phq9_df, scas_df, big5_df):
+    converted_phq9_df = _convert_phq9(phq9_df)
+    converted_scas_df = _convert_scas(scas_df)
+    converted_big5_df = _convert_big5(big5_df)
+    converted_df = pd.concat(
+        [
+            converted_phq9_df,
+            converted_scas_df,
+            converted_big5_df,
+        ],
+        axis=1,
+    )
+    return converted_df
+
+
+def convert_adult(before_qa_df):
     """
-    事前アンケート（大人）の各質問項目を数値に変換する
+    事前アンケート（成人）の各質問項目を数値に変換する
     """
     id_df = before_qa_df.iloc[:, 0]
     before_qa_df = before_qa_df.iloc[:, 1:]
-    # BIG5は10問
+    # BIG5(TIPI-J)は10問
     big5_df = before_qa_df.iloc[:, 0:10]
     # AQは50問
     aq_df = before_qa_df.iloc[:, 10:60]
@@ -236,13 +262,37 @@ def convert(before_qa_df):
     gad7_df = before_qa_df.iloc[:, 92:99]
     # LSASは24×2問
     lsas_df = before_qa_df.iloc[:, 100:148]
-    # PHQ9は10問
-    # PHQ9の最後の一問は集計に使わない
+    # PHQ9は9問
     phq9_df = before_qa_df.iloc[:, 148:157]
     # SISは6問
-    sis_df = before_qa_df.iloc[:, 158:164]
-    converted_df = _convert_each_section(
+    sis_df = before_qa_df.iloc[:, 157:163]
+    converted_df = _adult_section(
         big5_df, aq_df, perci_df, gad7_df, lsas_df, phq9_df, sis_df
     )
+    result_df = pd.concat([id_df, converted_df], axis=1)
+    return result_df
+
+
+def convert_child(before_qa_df):
+    id_df = before_qa_df.iloc[:, 0]
+    # 本人回答
+    # PHQ9は9問
+    phq9_df = before_qa_df.iloc[:, 1:10]
+    # SCASは39問
+    scas_df = before_qa_df.iloc[:, 10:49]
+    # BIG5(TIPI-J)は10問
+    big5_df = before_qa_df.iloc[:, 49:59]
+
+    # TODO: とりあえず保護者回答の分析は除く
+    # # 保護者回答
+    # # AQは50問
+    # # TODO: 数値計算に工夫が必要
+    # aq_df = before_qa_df.iloc[:, 59:109]
+    # aq_df.to_csv("aq_df.csv", index=False)
+    # # PERCIは32問
+    # # TODO: PERCIの保護者回答は欠損値がある
+    # perci_df = before_qa_df.iloc[:, 109:]
+
+    converted_df = _child_section(phq9_df, scas_df, big5_df)
     result_df = pd.concat([id_df, converted_df], axis=1)
     return result_df
