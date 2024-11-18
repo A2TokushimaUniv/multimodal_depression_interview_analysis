@@ -97,39 +97,39 @@ def _add_results(
     """
     結果をDataFrameに追加する
     """
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["PitchMean"]
-    ] = pitch_mean
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["PitchStddev"]
-    ] = pitch_stddev
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["LoudnessMean"]
-    ] = loudness_mean
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["LoudnessStddev"]
-    ] = loudness_stddev
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["JitterMean"]
-    ] = jitter_mean
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["JitterStddev"]
-    ] = jitter_stddev
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["ShimmerMean"]
-    ] = shimmer_mean
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["ShimmerStddev"]
-    ] = shimmer_stddev
-    qa_result_df.loc[qa_result_df["Subject_ID"] == target, column_names["HNRdBACF"]] = (
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["PitchMean"]] = (
+        pitch_mean
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["PitchStddev"]] = (
+        pitch_stddev
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["LoudnessMean"]] = (
+        loudness_mean
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["LoudnessStddev"]] = (
+        loudness_stddev
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["JitterMean"]] = (
+        jitter_mean
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["JitterStddev"]] = (
+        jitter_stddev
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["ShimmerMean"]] = (
+        shimmer_mean
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["ShimmerStddev"]] = (
+        shimmer_stddev
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["HNRdBACF"]] = (
         HNRdBACF_sma3nz
     )
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["F0semitone"]
-    ] = F0semitone
-    qa_result_df.loc[
-        qa_result_df["Subject_ID"] == target, column_names["F3frequency"]
-    ] = F3frequency
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["F0semitone"]] = (
+        F0semitone
+    )
+    qa_result_df.loc[qa_result_df["ID"] == target, column_names["F3frequency"]] = (
+        F3frequency
+    )
     return qa_result_df
 
 

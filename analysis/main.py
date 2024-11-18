@@ -137,9 +137,7 @@ def main(input_file_path, output_dir, threshold):
 
     logger.info("Calculating correlation matrix...")
     columns_to_exclude = [
-        col
-        for col in df.columns
-        if "Level" in col or "Flag" in col or "Subject_ID" == col
+        col for col in df.columns if "Level" in col or "Flag" in col or "ID" == col
     ]
     df = df.drop(columns=columns_to_exclude)
     calculate_statistics(output_dir, df)

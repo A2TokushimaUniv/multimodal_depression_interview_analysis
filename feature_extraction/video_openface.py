@@ -22,20 +22,20 @@ def _get_results(csv_file, qa_result_df):
     # AU全体の標準偏差を計算
     au_intensity_std_overall = au_intensity_df.stack().std()
 
-    subject_id = os.path.splitext(os.path.basename(csv_file))[0]
-    qa_result_df.loc[qa_result_df["Subject_ID"] == subject_id, "AUall_r_Mean"] = (
+    data_id = os.path.splitext(os.path.basename(csv_file))[0]
+    qa_result_df.loc[qa_result_df["ID"] == data_id, "AUall_r_Mean"] = (
         au_intensity_mean_overall
     )
-    qa_result_df.loc[qa_result_df["Subject_ID"] == subject_id, "AUall_r_Stddev"] = (
+    qa_result_df.loc[qa_result_df["ID"] == data_id, "AUall_r_Stddev"] = (
         au_intensity_std_overall
     )
     for au in au_intensity_columns:
-        qa_result_df.loc[
-            qa_result_df["Subject_ID"] == subject_id, f"{au}_Mean".strip()
-        ] = au_intensity_mean[au]
-        qa_result_df.loc[
-            qa_result_df["Subject_ID"] == subject_id, f"{au}_Stddev".strip()
-        ] = au_intensity_std[au]
+        qa_result_df.loc[qa_result_df["ID"] == data_id, f"{au}_Mean".strip()] = (
+            au_intensity_mean[au]
+        )
+        qa_result_df.loc[qa_result_df["ID"] == data_id, f"{au}_Stddev".strip()] = (
+            au_intensity_std[au]
+        )
 
     return qa_result_df
 
