@@ -80,20 +80,21 @@ def main(
 
     # 児童思春期のアンケートの処理
     igaku_child_before_df = pd.read_csv(igaku_child_before_file_path)
-    igaku_parent_before_df = pd.read_csv(
-        igaku_parent_before_file_path, skiprows=1
-    )  # 1行目には各項目をまとめたヘッダーが書かれているのでスキップする
-    igaku_parent_before_df.rename(
-        columns={"No": "ID"}, inplace=True
-    )  # No列をID列に変更する
-    igaku_child_parent_before_df = pd.merge(
-        igaku_child_before_df, igaku_parent_before_df, on="ID", how="inner"
-    )  # ID列をキーにして横方向に結合する
-    extracted_igaku_child_parent_before_df = extract_columns(
-        igaku_child_parent_before_df, before_child_parent_columns
+    # TODO: 今回は保護者の分析は含めない
+    # igaku_parent_before_df = pd.read_csv(
+    #     igaku_parent_before_file_path, skiprows=1
+    # )  # 1行目には各項目をまとめたヘッダーが書かれているのでスキップする
+    # igaku_parent_before_df.rename(
+    #     columns={"No": "ID"}, inplace=True
+    # )  # No列をID列に変更する
+    # igaku_child_parent_before_df = pd.merge(
+    #     igaku_child_before_df, igaku_parent_before_df, on="ID", how="inner"
+    # )  # ID列をキーにして横方向に結合する
+    extracted_igaku_child_before_df = extract_columns(
+        igaku_child_before_df, before_child_parent_columns
     )  # 必要な列を抽出
-    converted_child_parent_before_df = convert_child(
-        extracted_igaku_child_parent_before_df
+    converted_child_before_df = convert_child(
+        extracted_igaku_child_before_df
     )  # 各項目を数値に変換する
     extracted_igaku_child_after_df = extracted_igaku_after_df[
         ~extracted_igaku_after_df["ID"].isin(igaku_before_df["ID"])
@@ -106,7 +107,7 @@ def main(
         "Interview_Sad",
     ]
     qa_child_results_df = pd.merge(
-        converted_child_parent_before_df,
+        converted_child_before_df,
         extracted_igaku_child_after_df,
         on="ID",
         how="inner",
