@@ -141,7 +141,6 @@ def analyze_opensmile_stats(adult_qa_df, child_qa_df, input_data_dir):
     voice_files = get_voice_files(input_data_dir)
 
     for data_id, voice_file in voice_files:
-        print(data_id)
         logger.info(f"{voice_file}からOpenSMILE特徴量の統計値を計算しています....")
         stats_feature = smile_functions.process_file(voice_file)
         pitch_mean, pitch_stddev = _get_pitch(stats_feature)
