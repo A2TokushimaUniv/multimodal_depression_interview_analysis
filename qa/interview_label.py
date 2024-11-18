@@ -90,7 +90,7 @@ def main(adult_results_path, child_results_path):
     logger.info(f"  ラベル0（非鬱状態）のデータ数: {label_0_count}")
 
     results_df = _add_fold(results_df)
-    results_df.to_csv("interview_stratified_sampling_label.csv", index=False)
+    results_df.to_csv("labels.csv", index=False)
     return
 
 
