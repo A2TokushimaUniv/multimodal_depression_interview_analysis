@@ -111,7 +111,7 @@ def get_heatmap(output_dir, correlation_matrix):
     """
     相関行列のヒートマップをプロットする
     """
-    logger.info("Plotting heatmap...")
+    logger.info("ヒートマップを生成しています...")
     plt.figure(figsize=(50, 30))
     sns.heatmap(
         correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1, center=0
@@ -135,7 +135,7 @@ def calculate_statistics(output_dir, df):
 def main(input_file_path, output_dir, threshold):
     df = pd.read_csv(input_file_path)
 
-    logger.info("Calculating correlation matrix...")
+    logger.info("相関係数を計算しています...")
     columns_to_exclude = [
         col for col in df.columns if "Level" in col or "Flag" in col or "ID" == col
     ]
@@ -152,23 +152,23 @@ if __name__ == "__main__":
     parser.add_argument(
         "--input_file_path",
         default="../data/qa/qa_result_features.csv",
-        help="Input file path",
+        help="入力ファイル（成人）のパス",
         type=str,
     )
     parser.add_argument(
         "--output_dir",
         default="./analysis_results",
-        help="Output directory",
+        help="出力ディレクトリ",
         type=str,
     )
     parser.add_argument(
-        "--threshold", default=0.3, help="Correlation threshold", type=float
+        "--threshold", default=0.3, help="出力する相関係数の閾値", type=float
     )
     args = parser.parse_args()
     input_file_path = args.input_file_path
     output_dir = args.output_dir
     threshold = args.threshold
-    logger.info(f"Input file: {input_file_path}")
-    logger.info(f"Output directory: {output_dir}")
-    logger.info(f"Threshold: {threshold}")
+    logger.info(f"入力ファイル（成人）: {input_file_path}")
+    logger.info(f"出力ディレクトリ: {output_dir}")
+    logger.info(f"出力する相関係数の閾値: {threshold}")
     main(input_file_path, output_dir, threshold)

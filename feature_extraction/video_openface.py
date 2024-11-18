@@ -8,7 +8,7 @@ def _get_results(csv_file, qa_result_df):
     """
     結果をDataFrameに追加する
     """
-    logger.info(f"Extracting OpenFace feature from {csv_file}....")
+    logger.info(f"{csv_file}からOpenFace特徴量の統計値を計算しています....")
     face_df = pd.read_csv(csv_file)
     au_intensity_columns = [
         col for col in face_df.columns if "_r" in col and "AU" in col
@@ -42,7 +42,7 @@ def _get_results(csv_file, qa_result_df):
 
 def analyze_openface_stats(qa_result_df, input_data_dir):
     """
-    OpenFaceの特徴量を使って統計量を計算する
+    OpenFaceの特徴量を使って統計値を計算する
     """
     openface_files = get_openface_files(input_data_dir)
     for openface_file in openface_files:

@@ -71,32 +71,30 @@ def _count_negative_words(texts, negative_nouns, negative_verb_adj):
             if token.pos_ == "NOUN":
                 total_noun_count += 1
                 if token.lemma_ in negative_nouns:
-                    logger.info(f"Negative noun：{token.lemma_}")
+                    logger.info(f"ネガティブな名詞：{token.lemma_}")
                     negative_noun_count += 1
                     negative_noun_counter[token.lemma_] += 1
             # ネガティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in negative_verb_adj:
-                    logger.info(f"Negative verb or adj：{token.lemma_}")
+                    logger.info(f"ネガティブな用言：{token.lemma_}")
                     negative_verb_count += 1
                     negative_verb_adj_counter[token.lemma_] += 1
 
     top_negative_nouns = _get_top_frequent_words(negative_noun_counter)
     top_negative_verb_adj = _get_top_frequent_words(negative_verb_adj_counter)
-    logger.info(f"Top 5 negative nouns: {top_negative_nouns}")
-    logger.info(f"Top 5 negative verbs/adjectives: {top_negative_verb_adj}")
+    logger.info(f"ネガティブな名詞で最も出現頻度の高かった単語: {top_negative_nouns}")
+    logger.info(
+        f"ネガティブな用言で最も出現頻度の高かった単語: {top_negative_verb_adj}"
+    )
 
     percentage_negative_nouns = (negative_noun_count / total_noun_count) * 100
     percentage_negative_verb_adj = (negative_verb_count / total_verb_adj_count) * 100
-    logger.info(f"Negative noun count: {negative_noun_count}")
-    logger.info(
-        f"Percentage of negative nouns among all nouns: {percentage_negative_nouns}"
-    )
-    logger.info(f"Negative verb and adj count: {negative_verb_count}")
-    logger.info(
-        f"Percentage of negative verb and adj among all verb and adj: {percentage_negative_verb_adj}"
-    )
+    logger.info(f"ネガティブな名詞の数: {negative_noun_count}")
+    logger.info(f"全名詞中のネガティブな名詞の割合: {percentage_negative_nouns}")
+    logger.info(f"ネガティブな用言の数: {negative_verb_count}")
+    logger.info(f"全用言中のネガティブな用言の割合: {percentage_negative_verb_adj}")
     return (
         negative_noun_count,
         negative_verb_count,
@@ -125,31 +123,29 @@ def _count_positive_words(texts, positive_nouns, positive_verb_adj):
             if token.pos_ == "NOUN":
                 total_noun_count += 1
                 if token.lemma_ in positive_nouns:
-                    logger.info(f"Positive noun：{token.lemma_}")
+                    logger.info(f"ポジティブな名詞：{token.lemma_}")
                     positive_noun_count += 1
                     positive_noun_counter[token.lemma_] += 1
             # ポジティブな用言をカウント
             elif token.pos_ in ["VERB", "ADJ"]:
                 total_verb_adj_count += 1
                 if token.lemma_ in positive_verb_adj:
-                    logger.info(f"Positive verb or adj：{token.lemma_}")
+                    logger.info(f"ポジティブな用言：{token.lemma_}")
                     positive_verb_count += 1
                     positive_verb_counter[token.lemma_] += 1
     top_positive_nouns = _get_top_frequent_words(positive_noun_counter)
     top_positive_verb_adj = _get_top_frequent_words(positive_verb_counter)
-    logger.info(f"Top 5 positive nouns: {top_positive_nouns}")
-    logger.info(f"Top 5 positive verbs/adjectives: {top_positive_verb_adj}")
+    logger.info(f"ポジティブな名詞で最も出現頻度の高かった単語: {top_positive_nouns}")
+    logger.info(
+        f"ポジティブな用言で最も出現頻度の高かった単語: {top_positive_verb_adj}"
+    )
 
     percentage_positive_nouns = (positive_noun_count / total_noun_count) * 100
     percentage_positive_verb_adj = (positive_verb_count / total_verb_adj_count) * 100
-    logger.info(f"Positive noun count: {positive_noun_count}")
-    logger.info(
-        f"Percentage of positive nouns among all nouns: {percentage_positive_nouns}"
-    )
+    logger.info(f"ポジティブな名詞の数: {positive_noun_count}")
+    logger.info(f"全名詞中のポジティブな名詞の割合: {percentage_positive_nouns}")
     logger.info(f"Positive verb and adj count: {positive_verb_count}")
-    logger.info(
-        f"Percentage of positive verb and adj among all verb and adj: {percentage_positive_verb_adj}"
-    )
+    logger.info(f"全用言中のポジティブな用言の割合: {percentage_positive_verb_adj}")
     return (
         positive_noun_count,
         positive_verb_count,
@@ -301,7 +297,6 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     all_positive_verb_adj_counter = Counter()
 
     for data_id, text_file in text_files:
-        logger.info(f"Counting negative words from {text_file}....")
         text_data = pd.read_csv(text_file)
         texts = text_data["text"].tolist()
         start_seconds = text_data["start_seconds"].tolist()
@@ -347,7 +342,9 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
 
     os.makedirs(os.path.join(output_data_dir, "text_ranking"), exist_ok=True)
     all_top_negative_nouns = _get_top_frequent_words(all_negative_noun_counter, 100)
-    logger.info(f"All top negative nouns: {all_top_negative_nouns}")
+    logger.info(
+        f"全テキスト中で、ネガティブな名詞で最も出現頻度の高かった単語: {all_top_negative_nouns}"
+    )
     _write_result(
         os.path.join(output_data_dir, "text_ranking", "all_top_negative_nouns.csv"),
         all_top_negative_nouns,
@@ -356,14 +353,18 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     all_top_negative_verb_adj = _get_top_frequent_words(
         all_negative_verb_adj_counter, 100
     )
-    logger.info(f"All top negative verb adjectives: {all_top_negative_verb_adj}")
+    logger.info(
+        f"全テキスト中で、ネガティブな用言で最も出現頻度の高かった単語: {all_top_negative_verb_adj}"
+    )
     _write_result(
         os.path.join(output_data_dir, "text_ranking", "all_top_negative_verb_adj.csv"),
         all_top_negative_verb_adj,
     )
 
     all_top_positive_nouns = _get_top_frequent_words(all_positive_noun_counter, 100)
-    logger.info(f"All top positive nouns: {all_top_positive_nouns}")
+    logger.info(
+        f"全テキスト中で、ポジティブな名詞で最も出現頻度の高かった単語: {all_top_positive_nouns}"
+    )
     _write_result(
         os.path.join(output_data_dir, "text_ranking", "all_top_positive_nouns.csv"),
         all_top_positive_nouns,
@@ -372,7 +373,9 @@ def analyze_text(qa_result_df, input_data_dir, output_data_dir):
     all_top_positive_verb_adj = _get_top_frequent_words(
         all_positive_verb_adj_counter, 100
     )
-    logger.info(f"All top positive verb adjectives: {all_top_positive_verb_adj}")
+    logger.info(
+        f"全テキスト中で、ポジティブな用言で最も出現頻度の高かった単語: {all_top_positive_verb_adj}"
+    )
     _write_result(
         os.path.join(output_data_dir, "text_ranking", "all_top_positive_verb_adj.csv"),
         all_top_positive_verb_adj,

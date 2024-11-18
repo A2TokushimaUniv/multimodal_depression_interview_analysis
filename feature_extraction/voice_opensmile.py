@@ -140,7 +140,7 @@ def analyze_opensmile_stats(qa_result_df, input_data_dir):
     voice_files = get_voice_files(input_data_dir)
 
     for data_id, voice_file in voice_files:
-        logger.info(f"Extracting openSMILE stats feature from {voice_file}....")
+        logger.info(f"{voice_file}からOpenSMILE特徴量の統計値を計算しています....")
         stats_feature = smile_functions.process_file(voice_file)
         pitch_mean, pitch_stddev = _get_pitch(stats_feature)
         loudness_mean, loudness_stddev = _get_loudness(stats_feature)
@@ -200,7 +200,7 @@ def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
     """
     voice_files = get_voice_files(input_data_dir)
     for data_id, voice_file in voice_files:
-        logger.info(f"Extracting openSMILE LLD feature from {voice_file}....")
+        logger.info(f"{voice_file}からOpenSMILEのLLD特徴量を抽出しています....")
         feature = _get_lld(voice_file)
         save_feature(
             feature,

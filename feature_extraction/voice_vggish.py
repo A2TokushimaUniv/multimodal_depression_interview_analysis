@@ -14,7 +14,7 @@ def extract_vggish_feature(input_data_dir, output_data_dir):
     voice_files = get_voice_files(input_data_dir)
 
     for data_id, voice_file in voice_files:
-        logger.info(f"Extracting VGGish feature from {voice_file}....")
+        logger.info(f"{voice_file}かららVGGishの特徴量を抽出しています....")
         # VGGishの特徴量を取得
         feature = model.forward(voice_file)
         save_feature(
