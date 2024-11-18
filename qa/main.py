@@ -76,7 +76,7 @@ def main(
     qa_adult_results_df = pd.merge(
         converted_before_df, after_df, on="ID", how="inner"
     )  # 事前アンケートと事後アンケートを横方向に連結
-    qa_adult_results_df.to_csv("../data/qa/qa_adult_results.csv", index=False)
+    qa_adult_results_df.to_csv("../data/qa/adult_results.csv", index=False)
 
     # 児童思春期のアンケートの処理
     igaku_child_before_df = pd.read_csv(igaku_child_before_file_path)
@@ -104,7 +104,7 @@ def main(
         on="ID",
         how="inner",
     )  # 事前アンケートと事後アンケートを横方向に連結
-    qa_child_results_df.to_csv("../data/qa/qa_child_results.csv", index=False)
+    qa_child_results_df.to_csv("../data/qa/child_results.csv", index=False)
     return
 
 

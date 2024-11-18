@@ -91,7 +91,7 @@ def _convert_aq(aq_df):
     }
     converted_aq_df = _df_mapping_sum(aq_df, aq_mapping, "AQ")
     # AQ スコアが cutoff_point 以上であれば 1、そうでなければ 0 の列を追加
-    converted_aq_df["AQ_Flag"] = converted_aq_df["AQ"].apply(
+    converted_aq_df["AQ_Binary"] = converted_aq_df["AQ"].apply(
         lambda x: 1 if x >= aq_cutoff_point else 0
     )
     return converted_aq_df
@@ -159,7 +159,7 @@ def _convert_phq9(phq9_df):
     phq9_cutoff_point = 10
     phq_mapping = {"全くない": 0, "数日": 1, "半分以上": 2, "ほとんど毎日": 3}
     converted_phq9_df = _df_mapping_sum(phq9_df, phq_mapping, "PHQ9")
-    converted_phq9_df["PHQ9_Flag"] = converted_phq9_df["PHQ9"].apply(
+    converted_phq9_df["PHQ9_Binary"] = converted_phq9_df["PHQ9"].apply(
         lambda x: 1 if x >= phq9_cutoff_point else 0
     )
     return converted_phq9_df
