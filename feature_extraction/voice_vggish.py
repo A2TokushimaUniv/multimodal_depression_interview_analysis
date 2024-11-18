@@ -20,6 +20,6 @@ def extract_vggish_feature(input_data_dir, output_data_dir):
         save_feature(
             pd.DataFrame(feature.detach().cpu().numpy()),
             os.path.join(output_data_dir, "vggish"),
-            f"{data_id}.csv",
+            f"{data_id}_vggish.csv",
         )
     return
