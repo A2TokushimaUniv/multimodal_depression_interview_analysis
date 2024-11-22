@@ -3,9 +3,9 @@ import pandas as pd
 from logzero import logger
 from sklearn.model_selection import train_test_split
 
-TRAIN_DATA_RATIO = 0.7
+TRAIN_DATA_RATIO = 0.6
 VALID_DATA_RATIO = 0.2
-TEST_DATA_RATIO = 0.1
+TEST_DATA_RATIO = 0.2
 RANDOM_STATE = 42  # 乱数シードを設定して分割データの再現性を担保する
 
 
