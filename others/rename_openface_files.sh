@@ -1,34 +1,39 @@
 #!/bin/bash
 
-# 対象ディレクトリ（必要に応じて変更）
-DIR="../data/feature/openface"
-# ディレクトリ内のCSVファイルをループ
-for file in "$DIR"/*.csv; do
-    # ファイル名から拡張子を除いた部分を取得
-    filename=$(basename "$file" .csv)
-    echo "$filename"
+OPENFACE_DIR="../data/feature/openface"
+RAW_DIR="../data/raw"
 
-    # ハイフンで区切られている場合
-    if [[ "$filename" == *-* ]]; then
-        number=$(echo "$filename" | cut -d'-' -f1)
-        newname="riko${number}_openface.csv"
+# Ensure OpenFace directory exists
+if [ ! -d "$OPENFACE_DIR" ]; then
+    echo "Error: OpenFace directory does not exist: $OPENFACE_DIR"
+    exit 1
+fi
 
-    # アンダーバーで区切られている場合、最初にPがついている場合はPの部分を抜き出す
-    elif [[ "$filename" == *_* && "$filename" == P* ]]; then
-        number=$(echo "$filename" | cut -d'_' -f1)
-        newname="${number}_openface.csv"
-
-    # アンダーバーで区切られている場合、最初にPがついていない場合はCをつけて変換
-    elif [[ "$filename" == *_* ]]; then
-        number=$(echo "$filename" | cut -d'_' -f1)
-        newname="C${number}_openface.csv"
-
-    # その他の形式は無視
-    else
-        continue
+# Iterate through all CSV files in the OpenFace directory
+for csv_file in "$OPENFACE_DIR"/*.csv; do
+    # Check if the file exists (handle the case where no CSV files are present)
+    if [ ! -e "$csv_file" ]; then
+        echo "No CSV files found in $OPENFACE_DIR"
+        exit 1
     fi
 
-    # ファイル名の変更
-    mv -i "$file" "$DIR/$newname"
-    echo "Renamed $file to $DIR/$newname"
+    # Extract the base name of the file (e.g., video_name from video_name.csv)
+    base_name=$(basename "$csv_file" .csv)
+
+    # Check if a corresponding video exists in the RAW_DIR
+    video_path=$(find "$RAW_DIR" -type f -name "$base_name.mp4" -print -quit)
+
+    if [ -n "$video_path" ]; then
+        # Extract the video ID (the directory name containing the video)
+        video_id=$(basename $(dirname "$video_path"))
+
+        # Construct the new CSV file name
+        new_csv_file="$OPENFACE_DIR/${video_id}_openface.csv"
+
+        # Rename the CSV file
+        mv "$csv_file" "$new_csv_file"
+        echo "Renamed: $csv_file -> $new_csv_file"
+    else
+        echo "No matching video found for $csv_file"
+    fi
 done
