@@ -224,6 +224,6 @@ def extract_opensmile_lld_feature(input_data_dir, output_data_dir):
         save_feature(
             feature,
             os.path.join(output_data_dir, "opensmile"),
-            f"{data_id}_opensmile.csv",
+            f"{data_id}.csv",
         )
     logger.info("OpenSMILEのLLD特徴量を抽出しました")

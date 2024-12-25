@@ -28,7 +28,7 @@ for csv_file in "$OPENFACE_DIR"/*.csv; do
         video_id=$(basename $(dirname "$video_path"))
 
         # Construct the new CSV file name
-        new_csv_file="$OPENFACE_DIR/${video_id}_openface.csv"
+        new_csv_file="$OPENFACE_DIR/${video_id}.csv"
 
         # Rename the CSV file
         mv "$csv_file" "$new_csv_file"
