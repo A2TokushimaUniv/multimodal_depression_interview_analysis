@@ -1,7 +1,26 @@
 import pandas as pd
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
+import japanize_matplotlib
 from utils import delete_missing_ids
+
+
+def plot_age_distribution(data, title, xlabel, ylabel, output_path):
+    """
+    年齢の分布をプロットする
+    """
+    plt.figure(figsize=(10, 6))
+    data.plot(kind="hist", bins=20, edgecolor="black", alpha=0.7)
+    plt.title(title, fontsize=16)
+    plt.xlabel(xlabel, fontsize=14)
+    plt.ylabel(ylabel, fontsize=14)
+    plt.grid(axis="y", linestyle="--", alpha=0.7)
+
+    # 画像ファイルとして保存
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    print(f"年齢分布のグラフを '{output_path}' に保存しました。")
+    plt.close()
 
 
 def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
@@ -56,6 +75,26 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
     # 平均年齢の計算
     average_age = combined_df["年齢"].mean()
     print(f"平均年齢: {average_age:.2f}")
+
+    # 日本語の図を生成
+    japanize_matplotlib.japanize()
+    plot_age_distribution(
+        combined_df["年齢"],
+        title="年齢の分布",
+        xlabel="年齢",
+        ylabel="人数",
+        output_path="age_distribution_ja.png",
+    )
+
+    # 英語の図を生成
+    plt.rcParams.update({"font.size": 12})  # フォント設定をリセット
+    plot_age_distribution(
+        combined_df["年齢"],
+        title="Age Distribution",
+        xlabel="Age",
+        ylabel="Count",
+        output_path="age_distribution_en.png",
+    )
 
 
 if __name__ == "__main__":

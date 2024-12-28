@@ -11,7 +11,7 @@ for (( i=0; i<$file_count; i++ )); do
   echo "処理中のファイル: ${movie_files_array[$i]}"
   # Facial Landmark, Action Unit, Gaze, Poseのみを抽出する
   # See: https://github.com/TadasBaltrusaitis/OpenFace/wiki/Command-line-arguments#documentation
-  # NOTE: 出力ファイル名は指定できないので、出力後に<ID名>.csvとなるように手動で修正する、もしくはothers/rename_openface_files.shを実行する
+  # NOTE: 出力ファイル名は指定できないので、出力後にothers/rename_openface_files.shを実行してファイル名を変更する
   "$openface_feature_extraction_path" -f "${movie_files_array[$i]}" -out_dir ../data/feature/openface -2Dfp -aus -pose -gaze
 done
 
