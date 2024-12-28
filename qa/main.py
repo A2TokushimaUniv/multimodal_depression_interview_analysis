@@ -1,6 +1,6 @@
 import argparse
 from logzero import logger
-from utils import is_csv, add_riko_id, extract_columns
+from utils import is_csv, add_riko_id, extract_columns, delete_missing_ids
 import pandas as pd
 from before import convert_adult, convert_child
 
@@ -30,7 +30,8 @@ def main(
     before_child_parent_columns = pd.read_csv("./columns/before_child_parent.csv")
     after_columns = pd.read_csv("./columns/after.csv")
 
-    # 成人のアンケートの処理
+    # 1. 成人のアンケートの処理
+    ## 理工学部の事前アンケート
     riko_before_df = pd.read_csv(riko_before_file_path)
     riko_before_df["タイムスタンプ"] = pd.to_datetime(riko_before_df["タイムスタンプ"])
     riko_before_df = add_riko_id(
@@ -39,15 +40,24 @@ def main(
     extracted_riko_before_df = extract_columns(
         riko_before_df, before_columns
     )  # 必要な列を抽出
+    extracted_riko_before_df = delete_missing_ids(
+        extracted_riko_before_df
+    )  # 欠損値を削除
+
+    ## 医学部の事前アンケート
     igaku_before_df = pd.read_csv(igaku_before_file_path)
     extracted_igaku_before_df = extract_columns(
         igaku_before_df, before_columns
     )  # 必要な列を抽出
+    extracted_igaku_before_df = delete_missing_ids(
+        extracted_igaku_before_df
+    )  # 欠損値を削除
     before_df = pd.concat(
         [extracted_riko_before_df, extracted_igaku_before_df], axis=0
     )  # 事前アンケートを縦方向に連結
     converted_before_df = convert_adult(before_df)  # 各質問項目を数値に変換する
 
+    ## 理工学部の事後アンケート
     riko_after_df = pd.read_csv(riko_after_file_path)
     riko_after_df["タイムスタンプ"] = pd.to_datetime(riko_after_df["タイムスタンプ"])
     riko_after_df = add_riko_id(
@@ -56,13 +66,21 @@ def main(
     extracted_riko_after_df = extract_columns(
         riko_after_df, after_columns
     )  # 必要な列を抽出
+    extracted_riko_after_df = delete_missing_ids(
+        extracted_riko_after_df
+    )  # 欠損値を削除
+
+    ## 医学部の事後アンケート
     igaku_after_df = pd.read_csv(igaku_after_file_path)
     extracted_igaku_after_df = extract_columns(
         igaku_after_df, after_columns
     )  # 必要な列を抽出
     extracted_igaku_adult_after_df = extracted_igaku_after_df[
         extracted_igaku_after_df["ID"].isin(igaku_before_df["ID"])
-    ]  # 成人のデータのみを取り出す
+    ]  # 事前アンケートと重複するIDのみ（成人のデータのみ）を取り出す
+    extracted_igaku_after_df = delete_missing_ids(
+        extracted_igaku_after_df
+    )  # 欠損値を削除
     after_df = pd.concat(
         [extracted_riko_after_df, extracted_igaku_adult_after_df], axis=0
     )  # 事後アンケートを縦方向に連結
@@ -78,7 +96,7 @@ def main(
     )  # 事前アンケートと事後アンケートを横方向に連結
     qa_adult_results_df.to_csv("../data/qa/adult_results.csv", index=False)
 
-    # 児童思春期のアンケートの処理
+    # 2. 児童思春期のアンケートの処理
     igaku_child_before_df = pd.read_csv(igaku_child_before_file_path)
     # TODO: 今回は保護者の分析は含めない
     # igaku_parent_before_df = pd.read_csv(
@@ -93,12 +111,18 @@ def main(
     extracted_igaku_child_before_df = extract_columns(
         igaku_child_before_df, before_child_parent_columns
     )  # 必要な列を抽出
+    extracted_igaku_child_before_df = delete_missing_ids(
+        extracted_igaku_child_before_df
+    )  # 欠損値を削除
     converted_child_before_df = convert_child(
         extracted_igaku_child_before_df
     )  # 各項目を数値に変換する
     extracted_igaku_child_after_df = extracted_igaku_after_df[
         ~extracted_igaku_after_df["ID"].isin(igaku_before_df["ID"])
     ]
+    extracted_igaku_child_after_df = delete_missing_ids(
+        extracted_igaku_child_after_df
+    )  # 欠損値を削除
     extracted_igaku_child_after_df.columns = [
         "ID",
         "Interview_Happy",

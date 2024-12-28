@@ -1,3 +1,17 @@
+# NOTE: 欠損値が増えたら追記する
+_MISSING_IDS = ["C020", "C022", "C042", "P019", "riko32"]
+
+
+def delete_missing_ids(qa_df):
+    """
+    欠損値のIDを削除する
+    """
+    # ID列が含まれている場合、_MISSING_IDSに該当するIDを削除
+    if "ID" in qa_df.columns:
+        qa_df = qa_df[~qa_df["ID"].isin(_MISSING_IDS)]
+    return qa_df
+
+
 def is_csv(file_paths):
     """
     CSVファイルかどうかを判定する

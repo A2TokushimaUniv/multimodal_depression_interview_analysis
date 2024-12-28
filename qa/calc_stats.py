@@ -1,19 +1,7 @@
 import pandas as pd
 import argparse
 import numpy as np
-
-# 欠損値のID、計算対象にしない
-MISSING_IDS = ["C042", "P019", "C020", "C022"]
-
-
-def _delete_missing_ids(qa_df):
-    """
-    欠損値のIDを削除する
-    """
-    # ID列が含まれている場合、MISSING_IDSに該当するIDを削除
-    if "ID" in qa_df.columns:
-        qa_df = qa_df[~qa_df["ID"].isin(MISSING_IDS)]
-    return qa_df
+from utils import delete_missing_ids
 
 
 def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
@@ -22,7 +10,7 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
     """
     # データフレームを読み込む
     riko_before_qa_df = pd.read_csv(riko_before_qa_path).iloc[14:]
-    riko_before_qa_df = _delete_missing_ids(riko_before_qa_df)
+    riko_before_qa_df = delete_missing_ids(riko_before_qa_df)
     columns_to_extract = [
         col for col in riko_before_qa_df.columns if "性別" in col or "年齢" in col
     ]
@@ -30,13 +18,13 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
     riko_before_qa_df.columns = ["性別", "年齢"]
 
     igaku_before_qa_df = pd.read_csv(igaku_before_qa_path)
-    igaku_before_qa_df = _delete_missing_ids(igaku_before_qa_df)
+    igaku_before_qa_df = delete_missing_ids(igaku_before_qa_df)
     igaku_before_qa_df = igaku_before_qa_df[columns_to_extract]
     igaku_before_qa_df.columns = ["性別", "年齢"]
 
     columns_to_extract = ["年齢", "性別"]
     igaku_child_before_qa_df = pd.read_csv(igaku_child_before_qa_path)
-    igaku_child_before_qa_df = _delete_missing_ids(igaku_child_before_qa_df)
+    igaku_child_before_qa_df = delete_missing_ids(igaku_child_before_qa_df)
     igaku_child_before_qa_df = igaku_child_before_qa_df[columns_to_extract]
 
     # 3つのデータフレームを縦に連結
@@ -59,6 +47,7 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
         return np.nan  # それ以外の場合はNaNを返す
 
     combined_df["年齢"] = combined_df["年齢"].apply(extract_age)
+    combined_df = combined_df.dropna()  # NaNを含む行を削除
 
     # 男女の人数を計算
     gender_count = combined_df["性別"].value_counts()  # 性別ごとの人数をカウント

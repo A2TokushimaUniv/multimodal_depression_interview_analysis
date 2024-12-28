@@ -9,10 +9,6 @@ TEST_DATA_RATIO = 0.2
 RANDOM_STATE = 42  # 乱数シードを設定して分割データの再現性を担保する
 
 
-# 欠損値のID、ラベルを作らない
-MISSING_IDS = ["C042", "P019", "C020", "C022"]
-
-
 def _add_fold(results_df):
     """
     データを訓練データ、検証データ、テストデータに分割する
@@ -83,7 +79,6 @@ def main(adult_results_path, child_results_path):
     )
     # 縦方向に連結
     results_df = pd.concat([adult_df, child_df], axis=0).reset_index(drop=True)
-    results_df = results_df[~results_df["index"].isin(MISSING_IDS)]
 
     # 合計データ数、labelが1のデータ数、labelが0のデータ数を表示
     total_data = len(results_df)
