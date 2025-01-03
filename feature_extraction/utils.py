@@ -59,9 +59,7 @@ def get_openface_files(input_data_dir):
     file_paths = glob.glob(pattern, recursive=True)
     result = []
     for file_path in file_paths:
-        data_id = (
-            os.path.relpath(file_path, input_data_dir).split(os.sep)[0].split("_")[0]
-        )
+        data_id = os.path.splitext(os.path.basename(file_path))[0]
         result.append((data_id, file_path))
     result.sort()
     return result
