@@ -8,3 +8,6 @@ logzero
 opensmile
 py-feat
 opencv-python
+pydub
+moviepy
+huggingface_hub==0.23.5
