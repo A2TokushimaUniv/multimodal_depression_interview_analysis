@@ -67,6 +67,7 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
 
     combined_df["年齢"] = combined_df["年齢"].apply(extract_age)
     combined_df = combined_df.dropna()  # NaNを含む行を削除
+    combined_df.to_csv("age_sex_combined.csv", index=False)
 
     # 男女の人数を計算
     gender_count = combined_df["性別"].value_counts()  # 性別ごとの人数をカウント

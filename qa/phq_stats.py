@@ -45,6 +45,7 @@ def main(adult_results_path, child_results_path):
 
     # 成人と子どものデータを結合
     phq9_combined = pd.concat([phq9_adult, phq9_child], ignore_index=True)
+    phq9_combined.to_csv("phq9_combined.csv", index=False)
 
     # 平均値を計算
     adult_mean = phq9_adult.mean()
