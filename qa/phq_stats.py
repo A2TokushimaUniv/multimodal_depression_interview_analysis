@@ -6,7 +6,7 @@ import japanize_matplotlib
 from utils import delete_missing_ids
 
 
-def plot_phq9_distribution(phq9_combined, title, xlabel, ylabel, output_path):
+def plot_phq9_distribution(phq9_combined, xlabel, ylabel, output_path):
     """
     PHQ9の分布をプロットする
     """
@@ -60,7 +60,6 @@ def main(adult_results_path, child_results_path):
     japanize_matplotlib.japanize()
     plot_phq9_distribution(
         phq9_combined,
-        title="PHQ9の分布",
         xlabel="PHQ9スコア",
         ylabel="人数",
         output_path="phq9_distribution_ja.png",
@@ -70,7 +69,6 @@ def main(adult_results_path, child_results_path):
     plt.rcParams.update({"font.size": 12})  # フォント設定をリセット
     plot_phq9_distribution(
         phq9_combined,
-        title="Distribution of PHQ9",
         xlabel="PHQ9 Score",
         ylabel="Count",
         output_path="phq9_distribution_en.png",

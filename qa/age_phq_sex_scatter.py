@@ -43,7 +43,6 @@ def plot_scatter(
 
     # グラフの装飾
     japanize_matplotlib.japanize()
-    plt.title("PHQ9と年齢の散布図", fontsize=14)
     plt.xlabel("PHQ9", fontsize=12)
     plt.ylabel("年齢", fontsize=12)
     plt.legend()
@@ -71,7 +70,6 @@ def plot_scatter(
     )
 
     # グラフの装飾
-    plt.title("Scatter Plot of PHQ9 and Age", fontsize=14)
     plt.xlabel("PHQ9", fontsize=12)
     plt.ylabel("Age", fontsize=12)
     plt.legend()

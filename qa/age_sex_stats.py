@@ -6,7 +6,7 @@ import japanize_matplotlib
 from utils import delete_missing_ids
 
 
-def plot_age_distribution(data, title, xlabel, ylabel, output_path):
+def plot_age_distribution(data, xlabel, ylabel, output_path):
     """
     年齢の分布をプロットする
     """
@@ -81,7 +81,6 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
     japanize_matplotlib.japanize()
     plot_age_distribution(
         combined_df["年齢"],
-        title="年齢の分布",
         xlabel="年齢",
         ylabel="人数",
         output_path="age_distribution_ja.png",
@@ -91,7 +90,6 @@ def main(riko_before_qa_path, igaku_before_qa_path, igaku_child_before_qa_path):
     plt.rcParams.update({"font.size": 12})  # フォント設定をリセット
     plot_age_distribution(
         combined_df["年齢"],
-        title="Age Distribution",
         xlabel="Age",
         ylabel="Count",
         output_path="age_distribution_en.png",
