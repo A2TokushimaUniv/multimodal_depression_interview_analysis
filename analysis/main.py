@@ -6,8 +6,63 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 from logzero import logger
 
+questionnaire_columns = [
+    "Interview_Happy",
+    "Interview_Anxiety",
+    "Interview_Disgust",
+    "Interview_Sad",
+    "BIG5_Extrovert",
+    "BIG5_Openness",
+    "BIG5_Neuroticism",
+    "BIG5_Conscientiousness",
+    "BIG5_Agreeableness",
+    "AQ",
+    "PERCI",
+    "GAD7",
+    "LSAS",
+    "PHQ9",
+    "SIS",
+    "SCAS",
+]
 
-def get_significant_pairs(output_dir, correlation_matrix, threshold):
+au_columns = [
+    f"AU{'0' if au < 10 else ''}{au}_r_{stat}".strip()
+    for au in [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 45]
+    for stat in ["Mean", "Stddev"]
+]
+face_feature_columns = au_columns + ["AUall_r_Mean", "AUall_r_Stddev"]
+
+text_feature_columns = [
+    "Neg_Noun_Count",
+    "Neg_VerbAdj_Count",
+    "Neg_Word_Count",
+    "Pos_Noun_Count",
+    "Pos_VerbAdj_Count",
+    "Pos_Word_Count",
+    "Per_Pos_Noun",
+    "Per_Pos_VerbAdj",
+    "Per_Neg_Noun",
+    "Per_Neg_VerbAdj",
+    "CharPerMinutes",
+    "WordPerMinutes",
+]
+
+voice_feature_columns = [
+    "PitchMean",
+    "PitchStddev",
+    "LoudnessMean",
+    "LoudnessStddev",
+    "JitterMean",
+    "JitterStddev",
+    "ShimmerMean",
+    "ShimmerStddev",
+    "HNRdBACF",
+    "F0semitone",
+    "F3frequency",
+]
+
+
+def get_significant_pairs(output_file_path, correlation_matrix, threshold):
     """
     相関係数の絶対値が閾値以上のペアを見つける
     """
@@ -34,61 +89,11 @@ def get_significant_pairs(output_dir, correlation_matrix, threshold):
     significant_pairs_df.reset_index(inplace=True)
     significant_pairs_df.columns = ["Feature1", "Feature2", "correlation", "p_value"]
 
-    # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
-    questionnaire_columns = (
-        "Interview_Happy",
-        "Interview_Anxiety",
-        "Interview_Disgust",
-        "Interview_Sad",
-        "BIG5_Extrovert",
-        "BIG5_Openness",
-        "BIG5_Neuroticism",
-        "BIG5_Conscientiousness",
-        "BIG5_Agreeableness",
-        "AQ",
-        "PERCI",
-        "GAD7",
-        "LSAS",
-        "PHQ9",
-        "SIS",
-        "SCAS",
+    multimodal_feature_columns = (
+        face_feature_columns + text_feature_columns + voice_feature_columns
     )
 
-    openface_au_list = [1, 2, 4, 5, 6, 7, 9, 10, 12, 14, 15, 17, 20, 23, 25, 26, 28, 45]
-    au_columns = [
-        f"AU{'0' if au < 10 else ''}{au}_r_{stat}".strip()
-        for au in openface_au_list
-        for stat in ["Mean", "Stddev"]
-    ]
-    feature_columns = [
-        "AUall_r_Mean",
-        "AUall_r_Stddev",
-        "PitchMean",
-        "PitchStddev",
-        "LoudnessMean",
-        "LoudnessStddev",
-        "JitterMean",
-        "JitterStddev",
-        "ShimmerMean",
-        "ShimmerStddev",
-        "HNRdBACF",
-        "F0semitone",
-        "F3frequency",
-        "Neg_Noun_Count",
-        "Neg_VerbAdj_Count",
-        "Neg_Word_Count",
-        "Pos_Noun_Count",
-        "Pos_VerbAdj_Count",
-        "Pos_Word_Count",
-        "Per_Pos_Noun",
-        "Per_Pos_VerbAdj",
-        "Per_Neg_Noun",
-        "Per_Neg_VerbAdj",
-        "CharPerMinutes",
-        "WordPerMinutes",
-    ]
-
-    multimodal_feature_columns = set(au_columns + feature_columns)
+    # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
     significant_pairs_df = significant_pairs_df[
         ~(
             (
@@ -102,13 +107,10 @@ def get_significant_pairs(output_dir, correlation_matrix, threshold):
         )
     ]
 
-    file_suffix = str(threshold).replace(".", "")
-    significant_pairs_df.to_csv(
-        os.path.join(output_dir, f"significant_pairs_{file_suffix}.csv"), index=False
-    )
+    significant_pairs_df.to_csv(output_file_path, index=False)
 
 
-def get_heatmap(output_dir, correlation_matrix):
+def get_heatmap(output_file_path, correlation_matrix):
     """
     相関行列のヒートマップをプロットする
     """
@@ -118,10 +120,10 @@ def get_heatmap(output_dir, correlation_matrix):
         correlation_matrix, annot=True, cmap="coolwarm", vmin=-1, vmax=1, center=0
     )
     plt.title("Correlation Matrix Heatmap")
-    plt.savefig(os.path.join(output_dir, "correlation_matrix_heatmap.png"))
+    plt.savefig(output_file_path)
 
 
-def calculate_statistics(output_dir, df):
+def calculate_statistics(output_file_path, df):
     """
     特徴量の平均と標準偏差を計算する
     """
@@ -130,7 +132,7 @@ def calculate_statistics(output_dir, df):
 
     results = pd.DataFrame({"Mean": means, "Standard Deviation": stds})
 
-    results.to_csv(os.path.join(output_dir, "column_statistics.csv"), index=True)
+    results.to_csv(output_file_path, index=True)
 
 
 def main(input_file_path, output_dir, threshold):
@@ -138,15 +140,70 @@ def main(input_file_path, output_dir, threshold):
     os.makedirs(output_dir, exist_ok=True)
 
     logger.info("相関係数を計算しています...")
+    # アンケートデータから相関分析をしない列を削除
     columns_to_exclude = [
         col for col in qa_df.columns if "Level" in col or "Binary" in col or "ID" == col
     ]
     qa_df = qa_df.drop(columns=columns_to_exclude)
-    calculate_statistics(output_dir, qa_df)
-    correlation_matrix = qa_df.corr()
-    correlation_matrix.to_csv(os.path.join(output_dir, "correlation_matrix.csv"))
-    get_heatmap(output_dir, correlation_matrix)
-    get_significant_pairs(output_dir, correlation_matrix, threshold)
+    file_suffix = str(threshold).replace(".", "")
+    calculate_statistics(
+        os.path.join(output_dir, "qa_columns_statistics.csv"),
+        qa_df.filter(items=(questionnaire_columns)),
+    )
+
+    # テキスト特徴量の相関分析
+    os.makedirs(os.path.join(output_dir, "text"), exist_ok=True)
+    text_df = qa_df.filter(items=(questionnaire_columns + text_feature_columns))
+    calculate_statistics(
+        os.path.join(output_dir, "text", "text_columns_statistics.csv"),
+        text_df[text_feature_columns],
+    )
+    text_correlation_matrix = text_df.corr()
+    get_heatmap(
+        os.path.join(output_dir, "text", "text_correlation_matrix_heatmap.png"),
+        text_correlation_matrix,
+    )
+    get_significant_pairs(
+        os.path.join(output_dir, "text", f"text_significant_pairs_{file_suffix}.csv"),
+        text_correlation_matrix,
+        threshold,
+    )
+
+    # 音声特徴量の相関分析
+    os.makedirs(os.path.join(output_dir, "voice"), exist_ok=True)
+    voice_df = qa_df.filter(items=(questionnaire_columns + voice_feature_columns))
+    calculate_statistics(
+        os.path.join(output_dir, "voice", "voice_columns_statistics.csv"),
+        voice_df[voice_feature_columns],
+    )
+    voice_correlation_matrix = voice_df.corr()
+    get_heatmap(
+        os.path.join(output_dir, "voice", "voice_correlation_matrix_heatmap.png"),
+        voice_correlation_matrix,
+    )
+    get_significant_pairs(
+        os.path.join(output_dir, "voice", f"voice_significant_pairs_{file_suffix}.csv"),
+        voice_correlation_matrix,
+        threshold,
+    )
+
+    # 顔特徴量の相関分析
+    os.makedirs(os.path.join(output_dir, "face"), exist_ok=True)
+    face_df = qa_df.filter(items=(questionnaire_columns + face_feature_columns))
+    calculate_statistics(
+        os.path.join(output_dir, "face", "face_columns_statistics.csv"),
+        face_df[face_feature_columns],
+    )
+    face_correlation_matrix = face_df.corr()
+    get_heatmap(
+        os.path.join(output_dir, "face", "face_correlation_matrix_heatmap.png"),
+        face_correlation_matrix,
+    )
+    get_significant_pairs(
+        os.path.join(output_dir, "face", f"face_significant_pairs_{file_suffix}.csv"),
+        face_correlation_matrix,
+        threshold,
+    )
 
 
 if __name__ == "__main__":
@@ -176,7 +233,7 @@ if __name__ == "__main__":
         type=str,
     )
     parser.add_argument(
-        "--threshold", default=0.3, help="出力する相関係数の閾値", type=float
+        "--threshold", default=0.1, help="出力する相関係数の閾値", type=float
     )
     args = parser.parse_args()
     main(args.adult_qa_file_path, args.output_adult_dir, args.threshold)
