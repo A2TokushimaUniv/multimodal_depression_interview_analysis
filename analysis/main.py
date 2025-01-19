@@ -62,7 +62,9 @@ voice_feature_columns = [
 ]
 
 
-def get_significant_pairs(output_file_path, correlation_matrix, threshold):
+def get_significant_pairs(
+    output_file_path, correlation_matrix, threshold, is_questionnaire=False
+):
     """
     相関係数の絶対値が閾値以上のペアを見つける
     """
@@ -94,18 +96,19 @@ def get_significant_pairs(output_file_path, correlation_matrix, threshold):
     )
 
     # questionnaire_columns同士のペア、multimodal_feature_columns同士のペアを削除
-    significant_pairs_df = significant_pairs_df[
-        ~(
-            (
-                significant_pairs_df["Feature1"].isin(questionnaire_columns)
-                & significant_pairs_df["Feature2"].isin(questionnaire_columns)
+    if not is_questionnaire:
+        significant_pairs_df = significant_pairs_df[
+            ~(
+                (
+                    significant_pairs_df["Feature1"].isin(questionnaire_columns)
+                    & significant_pairs_df["Feature2"].isin(questionnaire_columns)
+                )
+                | (
+                    significant_pairs_df["Feature1"].isin(multimodal_feature_columns)
+                    & significant_pairs_df["Feature2"].isin(multimodal_feature_columns)
+                )
             )
-            | (
-                significant_pairs_df["Feature1"].isin(multimodal_feature_columns)
-                & significant_pairs_df["Feature2"].isin(multimodal_feature_columns)
-            )
-        )
-    ]
+        ]
 
     significant_pairs_df.to_csv(output_file_path, index=False)
 
@@ -203,6 +206,33 @@ def main(input_file_path, output_dir, threshold):
         os.path.join(output_dir, "face", f"face_significant_pairs_{file_suffix}.csv"),
         face_correlation_matrix,
         threshold,
+    )
+
+    # アンケート項目の相関分析
+    os.makedirs(os.path.join(output_dir, "questionnaire"), exist_ok=True)
+    questionnaire_df = qa_df.filter(items=(questionnaire_columns))
+    calculate_statistics(
+        os.path.join(
+            output_dir, "questionnaire", "questionnaire_columns_statistics.csv"
+        ),
+        questionnaire_df,
+    )
+    questionnaire_correlation_matrix = questionnaire_df.corr()
+    get_heatmap(
+        os.path.join(
+            output_dir, "questionnaire", "questionnaire_correlation_matrix_heatmap.png"
+        ),
+        questionnaire_correlation_matrix,
+    )
+    get_significant_pairs(
+        os.path.join(
+            output_dir,
+            "questionnaire",
+            f"questionnaire_significant_pairs_{file_suffix}.csv",
+        ),
+        questionnaire_correlation_matrix,
+        threshold,
+        True,
     )
 
 
