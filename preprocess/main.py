@@ -7,7 +7,7 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
 from reazonspeech.nemo.asr import transcribe, audio_from_path
 from reazonspeech.nemo.asr import load_model
-from utils import get_voice_files, get_video_files
+from utils import get_subject_voice_files, get_counsellor_voice_files, get_video_files
 
 # ReazonSpeech model for Speech-to-Text
 # See: https://huggingface.co/reazon-research/reazonspeech-nemo-v2
@@ -15,11 +15,11 @@ REAZON_MODEL = load_model(device="cuda")
 IGNORE_SEGMENTS_MILLI_SECONDS = 1000
 
 
-def _get_subject_segments(audio, min_silence_len=500, silence_thresh=-50):
+def _get_speech_segments(audio, min_silence_len=500, silence_thresh=-50):
     """
-    音声データから音のある区間（被験者の区間）の開始ミリ秒・終了ミリ秒を取得
+    音声データから発話区間の開始ミリ秒・終了ミリ秒を取得
     """
-    logger.info("被験者の発話区間を取得しています...")
+    logger.info("発話区間を取得しています...")
     # 音のある区間を抽出する
     nonsilent_segments = detect_nonsilent(
         audio,
@@ -27,7 +27,7 @@ def _get_subject_segments(audio, min_silence_len=500, silence_thresh=-50):
         min_silence_len=min_silence_len,  # min_silence_len ミリ秒以上無音なら区間を抽出
         silence_thresh=silence_thresh,  # slice_thresh dBFS以下で無音とみなす
     )
-    subject_segments = []
+    speech_segments = []
     for start, end in nonsilent_segments:
         if (
             end - start < IGNORE_SEGMENTS_MILLI_SECONDS
@@ -36,9 +36,9 @@ def _get_subject_segments(audio, min_silence_len=500, silence_thresh=-50):
                 f"{start}ミリ秒から{end}ミリ秒の区間は{IGNORE_SEGMENTS_MILLI_SECONDS}ミリ秒未満であるため無視します"
             )
             continue
-        subject_segments.append((start, end))
-    logger.info("被験者の発話区間を取得しました")
-    return subject_segments
+        speech_segments.append((start, end))
+    logger.info("発話区間を取得しました")
+    return speech_segments
 
 
 def _get_subject_text_list(voice_file_path, start, end):
@@ -60,17 +60,17 @@ def _get_subject_text_list(voice_file_path, start, end):
     return None
 
 
-def _get_subject_voice_text(
-    audio, subject_segments, voice_output_file_path, text_output_file_path
+def _get_voice_text(
+    audio, speech_segments, voice_output_file_path, text_output_file_path
 ):
     """
-    音のある区間（被験者の区間）だけ音声データを抜き出す
+    発話区間だけ音声データを抜き出す
     """
     subject_voice_sum = AudioSegment.empty()
     subject_text_list = []
-    logger.info("被験者の音声とテキストを抽出しています...")
+    logger.info("音声とテキストを抽出しています...")
     utterance_count = 1
-    for start, end in subject_segments:
+    for start, end in speech_segments:
         subject_voice_sum += audio[start:end]
         subject_voice = AudioSegment.empty()
         subject_voice += audio[start:end]
@@ -83,10 +83,10 @@ def _get_subject_voice_text(
             subject_text_list.append(text_list)
         utterance_count += 1
         os.remove(tmp_utterance_path)
-    # 被験者の区間のみの音声データを保存
+    # 発話区間のみの音声データを保存
     subject_voice_sum.export(voice_output_file_path, format="wav")
-    logger.info(f"{voice_output_file_path}に被験者の音声を保存しました")
-    # 被験者の発話テキストを保存
+    logger.info(f"{voice_output_file_path}に前処理済みの音声を保存しました")
+    # 発話テキストを保存
     with open(text_output_file_path, mode="w", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["start_seconds", "end_seconds", "text"])
@@ -95,14 +95,14 @@ def _get_subject_voice_text(
     return
 
 
-def _get_subject_video(video_file, subject_segments, video_output_file_path):
+def _get_video(video_file, speech_segments, video_output_file_path):
     """
-    subject_segmentsを使って、被験者の映っている区間の動画フレームを抜き出す
+    speech_segmentsを使って、対象者の映っている区間の動画フレームを抜き出す
     """
     video = VideoFileClip(video_file)
     # 動画の切り抜きと保存
     clips = []
-    for i, (start_ms, end_ms) in enumerate(subject_segments):
+    for i, (start_ms, end_ms) in enumerate(speech_segments):
         start_time = start_ms / 1000  # 秒に変換
         end_time = end_ms / 1000  # 秒に変換
         clip = video.subclip(start_time, end_time)
@@ -118,7 +118,7 @@ def _get_subject_video(video_file, subject_segments, video_output_file_path):
     for clip in clips:
         clip.reader.close()
         clip.audio.reader.close_proc()
-    logger.info(f"{video_output_file_path}に被験者の映っている区間の動画を保存しました")
+    logger.info(f"{video_output_file_path}に前処理済みの動画を保存しました")
     return
 
 
@@ -129,23 +129,23 @@ def _preprocess(video_file_path, voice_file_path, save_dir, text_output_file_pat
     logger.info(f"{video_file_path}と{voice_file_path}の前処理を開始します...")
     # pydubで音声ファイルを開く
     audio = AudioSegment.from_file(voice_file_path)
-    # 音声データから被験者が喋っている区間のミリ秒を取得する
-    subject_segments = _get_subject_segments(audio)
+    # 音声データから対象者が喋っている区間のミリ秒を取得する
+    speech_segments = _get_speech_segments(audio)
 
     voice_output_file_name = os.path.splitext(os.path.basename(voice_file_path))[0]
     voice_output_file_path = os.path.join(save_dir, f"{voice_output_file_name}.wav")
-    # subject_segmentsを利用して音声データから被験者の音声と発話テキストを抜き出す
-    _get_subject_voice_text(
+    # speech_segmentsを利用して音声データから発話区間の音声と発話テキストを抜き出す
+    _get_voice_text(
         audio,
-        subject_segments,
+        speech_segments,
         voice_output_file_path,
         text_output_file_path,
     )
 
     video_output_file_name = os.path.splitext(os.path.basename(video_file_path))[0]
     video_output_file_path = os.path.join(save_dir, f"{video_output_file_name}.mp4")
-    # subject_segmentsを利用して動画データから被験者の動画フレームを抜き出す
-    _get_subject_video(video_file_path, subject_segments, video_output_file_path)
+    # speech_segmentsを利用して動画データから対象者の映っている動画フレームを抜き出す
+    _get_video(video_file_path, speech_segments, video_output_file_path)
     return
 
 
@@ -153,18 +153,23 @@ def main(input_data_dir, output_data_dir):
     logger.info("Start preprocessing...")
     os.makedirs(output_data_dir, exist_ok=True)
 
-    voice_files = get_voice_files(input_data_dir)
+    subject_voice_files = get_subject_voice_files(input_data_dir)
+    counsellor_voice_files = get_counsellor_voice_files(input_data_dir)
     video_files = get_video_files(input_data_dir)
 
-    if len(voice_files) != len(video_files):
+    if not (
+        len(subject_voice_files) == len(counsellor_voice_files) == len(video_files)
+    ):
         logger.error(
-            f"voice_files: {len(voice_files)} != video_files: {len(video_files)}"
+            f"被験者の音声ファイルの数{len(subject_voice_files)}、カウンセラーの音声ファイルの数{len(counsellor_voice_files)}、動画ファイルの数{len(video_files)}が一致しません"
         )
-        raise ValueError("voice_filesとvideo_filesの数が一致しません")
+        raise ValueError(
+            "被験者の音声ファイルの数、カウンセラーの音声ファイルの数、動画ファイルの数が一致しません"
+        )
 
-    logger.info(f"{len(voice_files)}個のデータを前処理します")
-
-    for voice_file, video_file in zip(voice_files, video_files):
+    # TODO: 関数にまとめる
+    logger.info(f"{len(subject_voice_files)}個のデータを前処理します")
+    for voice_file, video_file in zip(subject_voice_files, video_files):
         voice_data_id = voice_file[0]
         voice_file_path = voice_file[1]
         video_data_id = video_file[0]
@@ -183,13 +188,16 @@ def main(input_data_dir, output_data_dir):
         data_id = voice_data_id
         multimodal_save_dir = os.path.join(output_data_dir, data_id)
         os.makedirs(multimodal_save_dir, exist_ok=True)
-        os.makedirs(os.path.join(output_data_dir, "text_elan"), exist_ok=True)
         video_filename = os.path.splitext(os.path.basename(video_file_path))[0]
-        text_output_file_path = os.path.join(
-            output_data_dir, "text_elan", f"{data_id}_{video_filename}.csv"
-        )
+        os.makedirs(os.path.join(output_data_dir, "subject_text"), exist_ok=True)
+        # 被験者データの前処理
         _preprocess(
-            video_file_path, voice_file_path, multimodal_save_dir, text_output_file_path
+            video_file_path,
+            voice_file_path,
+            multimodal_save_dir,
+            os.path.join(
+                output_data_dir, "subject_text", f"{data_id}_{video_filename}.csv"
+            ),
         )
     logger.info("前処理は正常に終了しました")
 
