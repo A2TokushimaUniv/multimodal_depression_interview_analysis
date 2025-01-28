@@ -61,7 +61,11 @@ def _get_subject_text_list(voice_file_path, start, end):
 
 
 def _get_voice_text(
-    audio, speech_segments, voice_output_file_path, text_output_file_path
+    audio,
+    speech_segments,
+    voice_output_file_path,
+    text_output_file_path,
+    is_counsellor=False,
 ):
     """
     発話区間だけ音声データを抜き出す
@@ -84,8 +88,9 @@ def _get_voice_text(
         utterance_count += 1
         os.remove(tmp_utterance_path)
     # 発話区間のみの音声データを保存
-    subject_voice_sum.export(voice_output_file_path, format="wav")
-    logger.info(f"{voice_output_file_path}に前処理済みの音声を保存しました")
+    if not is_counsellor:
+        subject_voice_sum.export(voice_output_file_path, format="wav")
+        logger.info(f"{voice_output_file_path}に前処理済みの音声を保存しました")
     # 発話テキストを保存
     with open(text_output_file_path, mode="w", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -122,7 +127,13 @@ def _get_video(video_file, speech_segments, video_output_file_path):
     return
 
 
-def _preprocess(video_file_path, voice_file_path, save_dir, text_output_file_path):
+def _preprocess(
+    video_file_path,
+    voice_file_path,
+    save_dir,
+    text_output_file_path,
+    is_counsellor=False,
+):
     """
     前処理を行う
     """
@@ -140,17 +151,18 @@ def _preprocess(video_file_path, voice_file_path, save_dir, text_output_file_pat
         speech_segments,
         voice_output_file_path,
         text_output_file_path,
+        is_counsellor,
     )
 
-    video_output_file_name = os.path.splitext(os.path.basename(video_file_path))[0]
-    video_output_file_path = os.path.join(save_dir, f"{video_output_file_name}.mp4")
-    # speech_segmentsを利用して動画データから対象者の映っている動画フレームを抜き出す
-    _get_video(video_file_path, speech_segments, video_output_file_path)
+    if not is_counsellor:
+        video_output_file_name = os.path.splitext(os.path.basename(video_file_path))[0]
+        video_output_file_path = os.path.join(save_dir, f"{video_output_file_name}.mp4")
+        # speech_segmentsを利用して動画データから対象者の映っている動画フレームを抜き出す
+        _get_video(video_file_path, speech_segments, video_output_file_path)
     return
 
 
 def main(input_data_dir, output_data_dir):
-    logger.info("Start preprocessing...")
     os.makedirs(output_data_dir, exist_ok=True)
 
     subject_voice_files = get_subject_voice_files(input_data_dir)
@@ -166,18 +178,14 @@ def main(input_data_dir, output_data_dir):
         raise ValueError(
             "被験者の音声ファイルの数、カウンセラーの音声ファイルの数、動画ファイルの数が一致しません"
         )
-
-    # TODO: 関数にまとめる
     logger.info(f"{len(subject_voice_files)}個のデータを前処理します")
+
+    # 被験者データの前処理
     for voice_file, video_file in zip(subject_voice_files, video_files):
         voice_data_id = voice_file[0]
         voice_file_path = voice_file[1]
         video_data_id = video_file[0]
         video_file_path = video_file[1]
-        logger.info(f"voice_data_id: {voice_data_id}")
-        logger.info(f"video_data_id: {video_data_id}")
-        logger.info(f"voice_file_path: {voice_file_path}")
-        logger.info(f"video_file_path: {video_file_path}")
 
         if voice_data_id != video_data_id:
             logger.error(
@@ -190,7 +198,6 @@ def main(input_data_dir, output_data_dir):
         os.makedirs(multimodal_save_dir, exist_ok=True)
         video_filename = os.path.splitext(os.path.basename(video_file_path))[0]
         os.makedirs(os.path.join(output_data_dir, "subject_text"), exist_ok=True)
-        # 被験者データの前処理
         _preprocess(
             video_file_path,
             voice_file_path,
@@ -198,6 +205,33 @@ def main(input_data_dir, output_data_dir):
             os.path.join(
                 output_data_dir, "subject_text", f"{data_id}_{video_filename}.csv"
             ),
+        )
+
+    for voice_file, video_file in zip(counsellor_voice_files, video_files):
+        voice_data_id = voice_file[0]
+        voice_file_path = voice_file[1]
+        video_data_id = video_file[0]
+        video_file_path = video_file[1]
+
+        if voice_data_id != video_data_id:
+            logger.error(
+                f"voice_data_id: {voice_data_id} != video_data_id: {video_data_id}"
+            )
+            raise ValueError("voice_data_idとvideo_data_idが一致しません")
+
+        data_id = voice_data_id
+        multimodal_save_dir = os.path.join(output_data_dir, data_id)
+        os.makedirs(multimodal_save_dir, exist_ok=True)
+        video_filename = os.path.splitext(os.path.basename(video_file_path))[0]
+        os.makedirs(os.path.join(output_data_dir, "counsellor_text"), exist_ok=True)
+        _preprocess(
+            video_file_path,
+            voice_file_path,
+            multimodal_save_dir,
+            os.path.join(
+                output_data_dir, "counsellor_text", f"{data_id}_{video_filename}.csv"
+            ),
+            True,
         )
     logger.info("前処理は正常に終了しました")
 

@@ -10,6 +10,7 @@ subject_voice_file_patterns = [
 ]
 
 counsellor_voice_file_patterns = [
+    "*_zoom_音声_アバター.m4a",
     "*_zoom_音声_アバター.m4a",
     "audioハル*.m4a",
 ]
