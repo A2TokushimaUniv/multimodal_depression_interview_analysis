@@ -7,7 +7,12 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips
 import csv
 from reazonspeech.nemo.asr import transcribe, audio_from_path
 from reazonspeech.nemo.asr import load_model
-from utils import get_subject_voice_files, get_counsellor_voice_files, get_video_files
+from utils import (
+    get_subject_voice_files,
+    get_counsellor_voice_files,
+    get_video_files,
+    set_random_seed,
+)
 
 # ReazonSpeech model for Speech-to-Text
 # See: https://huggingface.co/reazon-research/reazonspeech-nemo-v2
@@ -257,4 +262,5 @@ if __name__ == "__main__":
 
     logger.info(f"入力ディレクトリ：{input_data_dir}")
     logger.info(f"出力ディレクトリ：{output_data_dir}")
+    set_random_seed()  # Speech2Textモデルが常に同じ結テキスト果を返すようにシード値を設定
     main(input_data_dir, output_data_dir)

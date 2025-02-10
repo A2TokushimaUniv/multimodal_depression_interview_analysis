@@ -1,5 +1,8 @@
 import glob
 import os
+import random
+import numpy as np
+import torch
 
 # NOTE: ファイルパターンが変われば追加する
 subject_voice_file_patterns = [
@@ -49,3 +52,13 @@ def get_video_files(input_data_dir):
         result.append((data_id, file_path))
     result.sort()
     return result
+
+
+def set_random_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
