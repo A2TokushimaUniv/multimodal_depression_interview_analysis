@@ -262,7 +262,7 @@ def analyze_text(adult_qa_df, child_qa_df, input_data_dir, output_data_dir):
     GiNZAと極性辞書を使ってテキストを分析する
     """
     logger.info("テキストを分析しています....")
-    text_files = get_text_files(os.path.join(input_data_dir, "text_elan"))
+    text_files = get_text_files(os.path.join(input_data_dir, "subject_text"))
     if len(text_files) == 0:
         logger.error("テキストファイルが見つかりませんでした")
         raise ValueError("テキストファイルが見つかりませんでした")
